@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+char memory[1<<16];
+
 void
 die(char *str)
 {
@@ -36,12 +38,12 @@ main(int argc, char **argv)
 			break;
 		case 'h':
 			help();
-			return 0;
+			return EXIT_SUCCESS;
 		case 'v':
 			version();
-			return 0;
+			return EXIT_SUCCESS;
 		default:
-			die("Invalid option\n");
+			die("Invalid option");
 		}
 		if (i == argc) die("Enter a filename");
 
@@ -49,5 +51,11 @@ main(int argc, char **argv)
 
 	if (argc > i + 1) die("Only one filename can be supplied.");
 
-	return 0;
+	FILE* fp = fopen(argv[i], "r");
+	if (!fp) die("Unable to open file");
+
+	asm_assemble(fp, memory);
+	fclose(fp);
+
+	return EXIT_SUCCESS;
 }

@@ -3,7 +3,7 @@ BINDIR	:= bin
 SRCDIR	:= src
 
 CC	:= gcc
-CFLAGS	:= -MMD -std=c99 -Wall 
+CFLAGS	:= -MMD -std=c99 -Wall
 LDFLAGS	:=
 
 src	:= $(wildcard $(SRCDIR)/*.c)
