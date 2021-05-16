@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 
 #include "util.h"
 #include "asm.h"
@@ -22,8 +24,6 @@ int
 main(int argc, char **argv)
 {
 
-	int return_code = EXIT_SUCCESS;
-
 	if (argc <= 1) die("No file name");
 
 	int o = 1; // the char index into the argument string
@@ -43,21 +43,20 @@ main(int argc, char **argv)
 		default:
 			die("Invalid option");
 		}
-		if (i == argc) die("Enter a filename");
+		if (i == argc) die("No filename provided");
 
 	}
 
-	if (argc > i + 1) die("Only one filename can be supplied.");
+	if (argc > i + 1) die("Multiple files specified");
 
 	FILE* fp = fopen(argv[i], "r");
-	if (!fp) die("Unable to open file");
+	if (!fp) die(strerror(errno));
 
 	if (asm_assemble(fp, memory) != EXIT_SUCCESS) {
-		printf("Assembler error\n");
-		return_code = EXIT_FAILURE;
+		die("Assembler error");
 	}
 
 	fclose(fp);
 
-	return return_code;
+	return EXIT_SUCCESS;
 }
