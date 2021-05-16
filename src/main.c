@@ -1,22 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "util.h"
+#include "asm.h"
+
 char memory[1<<16];
 
-void
-die(char *str)
-{
-	fprintf(stderr, "ERROR: %s\n", str);
-	exit(EXIT_FAILURE);
-}
-
-void
+static void
 help()
 {
 	printf("help\n");
 }
 
-void
+static void
 version()
 {
 	printf("v0.0 Bailey Harrison\n");
@@ -25,6 +21,8 @@ version()
 int
 main(int argc, char **argv)
 {
+
+	int return_code = EXIT_SUCCESS;
 
 	if (argc <= 1) die("No file name");
 
@@ -54,8 +52,12 @@ main(int argc, char **argv)
 	FILE* fp = fopen(argv[i], "r");
 	if (!fp) die("Unable to open file");
 
-	asm_assemble(fp, memory);
+	if (asm_assemble(fp, memory) != EXIT_SUCCESS) {
+		printf("Assembler error\n");
+		return_code = EXIT_FAILURE;
+	}
+
 	fclose(fp);
 
-	return EXIT_SUCCESS;
+	return return_code;
 }
