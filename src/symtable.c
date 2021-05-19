@@ -3,10 +3,18 @@
 
 #include "symtable.h"
 
-int symtable_build(FILE* fp, symtable_entry_t** table, size_t sz)
+symtable_entry_t*
+symtable_build(FILE* fp, size_t sz)
 {
+	symtable_entry_t* tab = malloc(sizeof(symtable_entry_t) * sz);
 	for (int i = 0; i < sz; i++) {
-		(*table)[i].name = "Test";
+		tab[i].name = "hello";
 	}
-	return EXIT_SUCCESS;
+	return tab;
+}
+
+void
+symtable_cleanup(symtable_entry_t* tab)
+{
+	free(tab);
 }

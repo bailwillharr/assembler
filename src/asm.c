@@ -5,21 +5,24 @@
 #include "util.h"
 #include "symtable.h"
 
-#define SYMTABLE_SIZE 1024
+#define SYMTABLE_SIZE 16
 
 int
 asm_assemble(FILE* fp, char* mem)
 {
 
-	// allocate space for the symtable
-	symtable_entry_t *symbols =
-		malloc(sizeof(symtable_entry_t) * SYMTABLE_SIZE);
+	symtable_entry_t *tab;
 
-	if (symtable_build(fp, &symbols, SYMTABLE_SIZE) != EXIT_SUCCESS) {
+	// null ptr returned means symbol table couldn't be made
+	if ( (tab = symtable_build(fp, SYMTABLE_SIZE)) == NULL) {
 		die("Error building symbol table\n");
 	}
 
-	free(symbols);
+	for (int i = 0; i < SYMTABLE_SIZE; i++) {
+		printf(tab[i].name);
+	}
+
+	symtable_cleanup(tab);
 
 	return EXIT_SUCCESS;
 
