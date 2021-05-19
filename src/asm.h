@@ -1,1 +1,1 @@
-int asm_assemble(FILE* fp, char* mem);
+int asm_assemble(FILE *fp, char *mem);

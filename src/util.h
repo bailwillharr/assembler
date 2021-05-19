@@ -1,1 +1,1 @@
-void die(char*);
+void die(char *str);

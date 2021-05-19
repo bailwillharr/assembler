@@ -8,7 +8,7 @@
 #define SYMTABLE_SIZE 16
 
 int
-asm_assemble(FILE* fp, char* mem)
+asm_assemble(FILE *fp, char *mem)
 {
 
 	symtable_entry_t *tab;
@@ -19,10 +19,10 @@ asm_assemble(FILE* fp, char* mem)
 	}
 
 	for (int i = 0; i < SYMTABLE_SIZE; i++) {
-		printf(tab[i].name);
+		printf("tab[%d].name = %s\n", i, tab[i].name);
 	}
 
-	symtable_cleanup(tab);
+	symtable_cleanup(tab, SYMTABLE_SIZE);
 
 	return EXIT_SUCCESS;
 

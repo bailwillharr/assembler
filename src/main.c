@@ -49,7 +49,7 @@ main(int argc, char **argv)
 
 	if (argc > i + 1) die("Multiple files specified");
 
-	FILE* fp = fopen(argv[i], "r");
+	FILE *fp = fopen(argv[i], "r");
 	if (!fp) die(strerror(errno));
 
 	if (asm_assemble(fp, memory) != EXIT_SUCCESS) {
