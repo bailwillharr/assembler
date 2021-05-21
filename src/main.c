@@ -6,7 +6,7 @@
 #include "util.h"
 #include "asm.h"
 
-char memory[1<<16];
+#define MEMORY_SIZE 65536
 
 static void
 help()
@@ -49,14 +49,27 @@ main(int argc, char **argv)
 
 	if (argc > i + 1) die("Multiple files specified");
 
+
+
+	// Generate binary machine code
 	FILE *fp = fopen(argv[i], "r");
 	if (!fp) die(strerror(errno));
 
-	if (asm_assemble(fp, memory) != EXIT_SUCCESS) {
-		die("Assembler error");
-	}
+	char memory[MEMORY_SIZE] = {};
 
+	asm_assemble(fp, memory, MEMORY_SIZE);
+	fclose(fp);
+
+
+
+	// Write binary machine code to file
+	fp = fopen("file.bin", "wb");
+	if (!fp) die(strerror(errno));
+
+	if (fwrite(memory, 1, MEMORY_SIZE, fp) != MEMORY_SIZE)
+		die("Unable to write to output file");
 	fclose(fp);
 
 	return EXIT_SUCCESS;
+
 }
