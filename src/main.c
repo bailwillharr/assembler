@@ -5,14 +5,11 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#define MEMORY_SIZE 65536
-const char *OUTFILE_NAME = "file.rom";
+#include "util.h"
+#include "symtable.h"
+#include "assemble.h"
 
-void die(char *str)
-{
-	fprintf(stderr, "ERROR: %s\n", str);
-	exit(EXIT_FAILURE);
-}
+const char *OUTFILE_NAME = "file.rom";
 
 static void help(char *argv0)
 {
@@ -65,9 +62,20 @@ int main(int argc, char *argv[])
 	FILE *fp = fopen(argv[i], "r");
 	if (!fp) die(strerror(errno));
 
-	char *memory = malloc(1024);
-//	asm_assemble(fp, memory, MEMORY_SIZE);
+
+	// FIRST PASS
+	// symtable works as a linked list of symbols
+	struct symbol symtable_head;
+	size_t memory_size;
+	memory_size = symtable_build(fp, &symtable_head);
+
+	char* memory = calloc(memory_size, 1);
+	if (memory == NULL) die("Failed calloc()");
+	rewind(fp);
+	assemble(fp, memory);
 	fclose(fp);
+
+
 
 	// Write binary machine code to file
 	if (stat(OUTFILE_NAME, &st) == EXIT_SUCCESS) {
@@ -79,10 +87,12 @@ int main(int argc, char *argv[])
 	fp = fopen(OUTFILE_NAME, "wb");
 	if (!fp) die(strerror(errno));
 
-	if (fwrite(memory, 1, MEMORY_SIZE, fp) != MEMORY_SIZE)
+	if (fwrite(memory, 1, memory_size, fp) != memory_size) {
 		die("Unable to write to output file");
-	fclose(fp);
+	}
 
+	fclose(fp);
+	free(memory);
 	return EXIT_SUCCESS;
 
 }
