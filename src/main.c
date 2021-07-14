@@ -2,26 +2,29 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-
-#include "util.h"
-#include "asm.h"
+#include <fcntl.h>
+#include <sys/stat.h>
 
 #define MEMORY_SIZE 65536
+const char *OUTFILE_NAME = "file.rom";
 
-static void
-help()
+void die(char *str)
 {
-	printf("help\n");
+	fprintf(stderr, "ERROR: %s\n", str);
+	exit(EXIT_FAILURE);
 }
 
-static void
-version()
+static void help(char *argv0)
+{
+	printf("usage: %s [-hv] file\n", argv0);
+}
+
+static void version()
 {
 	printf("v0.0 Bailey Harrison\n");
 }
 
-int
-main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
 
 	if (argc <= 1) die("No file name");
@@ -35,7 +38,7 @@ main(int argc, char **argv)
 			i++;
 			break;
 		case 'h':
-			help();
+			help(argv[0]);
 			return EXIT_SUCCESS;
 		case 'v':
 			version();
@@ -52,18 +55,28 @@ main(int argc, char **argv)
 
 
 	// Generate binary machine code
+	struct stat st;
+	if (stat(argv[i], &st) != EXIT_SUCCESS) {
+		die(strerror(errno));
+	}
+	if (!S_ISREG(st.st_mode)) {
+		die("A regular file must be specified");
+	}
 	FILE *fp = fopen(argv[i], "r");
 	if (!fp) die(strerror(errno));
 
-	char memory[MEMORY_SIZE] = {};
-
-	asm_assemble(fp, memory, MEMORY_SIZE);
+	char *memory = malloc(1024);
+//	asm_assemble(fp, memory, MEMORY_SIZE);
 	fclose(fp);
 
-
-
 	// Write binary machine code to file
-	fp = fopen("file.bin", "wb");
+	if (stat(OUTFILE_NAME, &st) == EXIT_SUCCESS) {
+		if (!S_ISREG(st.st_mode)) {
+			die("A regular file must be specified");
+		}
+	}
+
+	fp = fopen(OUTFILE_NAME, "wb");
 	if (!fp) die(strerror(errno));
 
 	if (fwrite(memory, 1, MEMORY_SIZE, fp) != MEMORY_SIZE)
