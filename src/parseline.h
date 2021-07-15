@@ -2,15 +2,16 @@ struct line_data {
 	
 	char *new_label;
 
+	int is_pseudo_op;
+
 	size_t opcode_sz; // 0, 1, 2, or 3 bytes?
-	int opcode; // TODO: little endian or big endian?
+	int opcode;
 
 	size_t operand_sz; // 0, 1, or 2 bytes?
 	int operand_is_literal;
-	union { // literal and label references are mutually exclusive
-		int operand_literal;
-		char *operand_label;
-	};
+	// These two variables are mutually exclusive:
+	int operand_literal;
+	char *operand_label;
 
 };
 
