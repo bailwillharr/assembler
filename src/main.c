@@ -11,7 +11,7 @@
 
 const char *OUTFILE_NAME = "file.rom";
 
-static void help(char *argv0)
+static void usage(char *argv0)
 {
 	printf("usage: %s [-hv] file\n", argv0);
 }
@@ -24,7 +24,10 @@ static void version()
 int main(int argc, char *argv[])
 {
 
-	if (argc <= 1) die("No file name");
+	if (argc <= 1) {
+		usage(argv[0]);
+		return EXIT_FAILURE;
+	}
 
 	int o = 1; // the char index into the argument string
 	int i;
@@ -35,7 +38,7 @@ int main(int argc, char *argv[])
 			i++;
 			break;
 		case 'h':
-			help(argv[0]);
+			usage(argv[0]);
 			return EXIT_SUCCESS;
 		case 'v':
 			version();
@@ -65,9 +68,15 @@ int main(int argc, char *argv[])
 
 	// FIRST PASS
 	// symtable works as a linked list of symbols
-	struct symbol symtable_head;
+	struct symbol *symtable_head = NULL;
 	size_t memory_size;
 	memory_size = symtable_build(fp, &symtable_head);
+	
+	struct symbol *entry = symtable_head;
+	while (entry != NULL) {
+		printf("current: %p, name: %s, value: %d, next: %p\n", (void *)entry, entry->label, entry->value, (void *)entry->next);
+		entry = entry->next;
+	}
 
 	char* memory = calloc(memory_size, 1);
 	if (memory == NULL) die("Failed calloc()");
