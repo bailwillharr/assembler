@@ -40,9 +40,6 @@ size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 		struct line_data data;
 		size_t line_assembled_size = parseline(line, &data);
 
-		// debug
-		printf("Opcode: %4X, Operand: %4X, Address: %d\n", data.opcode, data.operand_literal, address);
-
 		if (data.new_label != NULL) {
 			struct symbol *new_symbol = calloc(sizeof(struct symbol), 1);
 			new_symbol->label = data.new_label;
