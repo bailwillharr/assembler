@@ -1,0 +1,13 @@
+	.data $F000		; location of uninitialised data
+	.org $8000		; program entry point
+	ld a, 7
+
+	ld hl, 1000
+loop	dec hl
+	jr nz, loop
+	
+end:	jp $8000
+
+2label
+
+label69

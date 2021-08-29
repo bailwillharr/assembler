@@ -55,29 +55,31 @@ int main(int argc, char *argv[])
 
 
 	// Generate binary machine code
-	struct stat st;
+	struct stat st; // structure holds file type information
 	if (stat(argv[i], &st) != EXIT_SUCCESS) {
-		die(strerror(errno));
+		die(strerror(errno)); // error if file doesn't exist
 	}
 	if (!S_ISREG(st.st_mode)) {
-		die("A regular file must be specified");
+		die("A regular file must be specified"); // error if not normal file
 	}
 	FILE *fp = fopen(argv[i], "r");
-	if (!fp) die(strerror(errno));
+	if (!fp) die(strerror(errno)); // error if unable to open file
 
 
 	// FIRST PASS
-	// symtable works as a linked list of symbols
+	// symtable is a linked list of symbol:address pairs
 	struct symbol *symtable_head = NULL;
-	size_t memory_size;
+	size_t memory_size; // holds the size of the output binary
 	memory_size = symtable_build(fp, &symtable_head);
 	
+	// DEBUG: print symbol table
 	struct symbol *entry = symtable_head;
 	while (entry != NULL) {
 		printf("current: %p, name: %s, value: %d, next: %p\n", (void *)entry, entry->label, entry->value, (void *)entry->next);
 		entry = entry->next;
 	}
 
+	// SECOND PASS
 	char* memory = calloc(memory_size, 1);
 	if (memory == NULL) die("Failed calloc()");
 	rewind(fp);
