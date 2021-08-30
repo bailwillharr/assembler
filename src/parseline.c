@@ -7,32 +7,43 @@
 #include "util.h"
 #include "parseline.h"
 
-#define LABEL_MAX_LEN 32
-
 // should a character be in a label or not
-static int is_label_char_valid(char c)
+static inline int is_label_char_valid(char c)
 {
-	switch (c) {
-	case '0'...'9':
-		return 1;
-	case 'A'...'Z':
-		return 1;
-	case '_':
-		return 1;
-	case 'a'...'z':
-		return 1;
-	}
+	// label can only contain alphanumerics and underscores
+	if (isalnum(c)) return 1;
+	if (c == '_') return 1;
 	return  0;
+}
+
+// should a character be in an opcode or not
+static inline int is_opcode_char_valid(char c)
+{
+	// opcode can only contain letters (uppercase or lowercase)
+	return isalpha(c);
 }
 
 // returns number of bytes used by the line's instruction
 size_t parseline(char *line, struct line_data *data)
 {
 
-	// to define label, loop until TAB/LF/SP/: is encountered
+	data->new_label = NULL;
+	data->pseudo_op = PSEUDO_NULL;
+	data->opcode_sz = 0;
+	data->opcode = 0;
+	data->operand_sz = 0;
+	data->operand_label = NULL;
+	data->operand_literal = 0;
+
+	int index = 0; // index into line
+
+
+
+	// BEGIN LABEL PARSING
+	// to define label, loop until TAB/LF/: is encountered
 	if (	line[0] != '\t' &&
 		line[0] != '\n') {
-		// there must be a label!
+		// there is a label on this line
 		
 		if ( isdigit(line[0]) != 0 || is_label_char_valid(line[0]) == 0) {
 			die("Label begins with invalid character");
@@ -46,7 +57,6 @@ size_t parseline(char *line, struct line_data *data)
 
 				if (	line[len] != '\t' &&
 					line[len] != '\n' &&
-					line[len] != ' ' &&
 					line[len] != ':') {
 
 					die("Label contains an invalid character");
@@ -62,19 +72,58 @@ size_t parseline(char *line, struct line_data *data)
 		for (int i = 0; i < len; i++) {
 			data->new_label[i] = line[i];
 		}
-		data->new_label[len] = '\0'; // add terminating \0
-	} else {
-		// there is no label
-		data->new_label = NULL; 
+
+		// DEBUG
+		printf("label: %s has length: %d\n", data->new_label, len);
+
+		data->new_label[len] = '\0'; // add terminating 0
+
+		index += len;
+
+		// skip over optional colon
+		if (line[index] == ':') {
+			// DEBUG
+			printf("COLON\n");
+			index++;
+		}
+
 	}
+	// LABEL PARSING DONE
 
+	if (line[index] == '\n') return 0;
 
-	data->is_pseudo_op = 0;
-	data->opcode_sz = 2;
-	data->opcode = 0xED4B; // ld bc, (**)
-	data->operand_sz = 2;
-	data->operand_is_literal = 1;
-	data->operand_literal = 0xBEEF;
+	// skip until opcode or pseudo opcode:
+	for ( ; line[index] == '\t' || line[index] == ' '; index++) ;
+
+	// BEGIN OPCODE PARSING
+	int len = 0; // length of opcode name
+	char opcode_name[OPCODE_NAME_MAX_LEN] = { 0 };
+	for ( ;; ) {
+		if (is_opcode_char_valid(line[index]) != 0) {
+			// char is valid
+			opcode_name[len] = line[index];
+			len++;
+			index++;
+			if (len > OPCODE_NAME_MAX_LEN) {
+				die("Opcode name too long");
+			}
+		} else {
+			// char is not valid or is end of opcode
+			if (	line[index] != '\n' &&
+				line[index] != '\t' &&
+				line[index] != ' ') {
+				die ("Opcode contains invalid characters");
+			} else {
+				break;
+			}
+		}
+	}
+	// DEBUG
+	printf("op: %s\n", opcode_name);
+	size_t opcode_sz;
+	int opcode;
+	opcode_lookup(opcode_name, &opcode, &opcode_sz);
+
 	return data->opcode_sz + data->operand_sz;
 
 }

@@ -2,25 +2,15 @@ struct line_data {
 	
 	char *new_label; // empty if no label is defined
 
-	int is_pseudo_op;
+	enum pseudo_opcode pseudo_op; // ignore if 0
 
-	// is_pseudo_op == 1
-	enum pseudo_opcode opcode_pseudo;
+	// ignored when pseudo op
+	size_t opcode_sz;
+	int opcode; // stored little-endian
 
-	// is_pseudo_op == 0
-	size_t opcode_sz; // 0, 1, 2, or 3 bytes?
-	int opcode;
-
-
-
-	size_t operand_sz; // 0, 1, or 2 bytes?
-	int operand_is_literal;
-	// operand_is_literal == 1
-	int operand_literal;
-
-	// operand_is_literal == 0
-	char *operand_label;
-
+	size_t operand_sz;
+	char *operand_label; // when 0, use operand_literal instead
+	int operand_literal; // stored little-endian
 };
 
 // returns number of bytes used by the line's instruction

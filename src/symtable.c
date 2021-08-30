@@ -29,13 +29,21 @@ size_t symtable_len(struct symbol *symtable_head)
  */
 size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 {
+	int line_num = 1;
 	int address = 0;
 	char line[2048];
+	
 	while (fgets(line, sizeof(line), fp)) {
 		size_t len = strlen(line);
 		if (len == 0) continue;
 		if (line[len - 1] != '\n') {
-			die("Line too long");
+			if (fgetc(fp) == EOF) {
+				line[len - 1] = '\n';
+				// DEBUG
+				printf("At end of file\n");
+			} else {
+				die("Line too long");
+			}
 		}
 		struct line_data data;
 		size_t line_assembled_size = parseline(line, &data);
@@ -48,6 +56,7 @@ size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 			*symtable_head = new_symbol;
 		}
 		address += line_assembled_size;
+		line_num++;
 	}
 	
 	return (size_t)address;
