@@ -4,4 +4,3 @@
 
 enum pseudo_opcode { PSEUDO_NULL, PSEUDO_DB, PSEUDO_ORG };
 
-void opcode_lookup(char *opcode_name, int *opcode, size_t *opcode_sz);
