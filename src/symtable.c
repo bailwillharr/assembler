@@ -29,7 +29,7 @@ size_t symtable_len(struct symbol *symtable_head)
  */
 size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 {
-	int line_num = 1;
+	int line_no = 1;
 	int address = 0;
 	char line[2048];
 	
@@ -46,7 +46,7 @@ size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 			}
 		}
 		struct line_data data;
-		size_t line_assembled_size = parseline(line, &data);
+		size_t line_assembled_size = parseline(line, &data, line_no);
 
 		if (data.new_label != NULL) {
 			struct symbol *new_symbol = calloc(sizeof(struct symbol), 1);
@@ -56,7 +56,7 @@ size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 			*symtable_head = new_symbol;
 		}
 		address += line_assembled_size;
-		line_num++;
+		line_no++;
 	}
 	
 	return (size_t)address;

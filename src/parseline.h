@@ -14,4 +14,4 @@ struct line_data {
 };
 
 // returns number of bytes used by the line's instruction
-size_t parseline(char *line, struct line_data *data);
+size_t parseline(char *line, struct line_data *data, int line_no);

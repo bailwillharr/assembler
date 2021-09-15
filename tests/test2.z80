@@ -5,6 +5,8 @@ loop		dec hl
 		jr nz, loop
 	
 end:		jp $8000
-
+	.this should be recognised
+	#this should error
+	1error as well
 
 label69:	xor a

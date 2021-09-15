@@ -1,10 +1,14 @@
 		ld a, 7		; comment
 
 		ld hl, 1000
+		; commentedout
 loop		dec hl
 		jr nz, loop
-	
+
 end:		jp $8000
 
+do_nothing:	;com
 
 label69:	xor a
+
+half;label
