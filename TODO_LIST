@@ -1,0 +1,8 @@
+**** IMMEDIATE ****
+TODO - Actually parse the assembly instructions
+TODO - Allow output file to be specified
+TODO - Add .db (bytes and strings) and .dw (16 bit words)
+
+**** OPTIONAL ****
+TODO - Add support for .phase and .dephase
+TODO - Add .rb for reserving blocks of memory
