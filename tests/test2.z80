@@ -1,12 +1,5 @@
-		ld a, 7		; comment
-
-		ld hl, 1000
-loop		dec hl
-		jr nz, loop
-	
-end:		jp $8000
-	.this should be recognised
-	#this should error
-	1error as well
-
-label69:	xor a
+		jr end
+		jr end
+		jr end
+end
+		jr end

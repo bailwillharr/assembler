@@ -4,8 +4,11 @@
 		; commentedout
 loop		dec hl
 		jr nz, loop
+		ldir
 
+		this
 end:		jp $8000
+a:		ret
 
 do_nothing:	;com
 

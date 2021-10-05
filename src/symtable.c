@@ -12,14 +12,25 @@
  * This symtable will read backwards to the order items are added.
  */
 
-size_t symtable_len(struct symbol *symtable_head)
+size_t symtable_len(const struct symbol *symtable_head)
 {
 	size_t len = 0;
-	struct symbol *current;
-	for (current = symtable_head; current != NULL; current = current->next) {
+	for (const struct symbol *current = symtable_head; current != NULL; current = current->next) {
 		len += 1;
 	}
 	return len;
+}
+
+int symtable_search(const struct symbol *head, const char *label) {
+
+	for (const struct symbol *entry = head; entry != NULL; entry = entry->next) {
+		if (strcmp(label, entry->label) == 0) {
+			return entry->value;
+		}
+	}
+
+	return -1;
+
 }
 
 /* 
@@ -32,7 +43,7 @@ size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 	int line_no = 1;
 	int address = 0;
 	char line[2048];
-	
+
 	while (fgets(line, sizeof(line), fp)) {
 		size_t len = strlen(line);
 		if (len == 0) continue;
