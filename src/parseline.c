@@ -116,7 +116,7 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 		data->new_label[len] = 0;
 
 #ifdef DEBUG
-		printf("label %s has length: %d\n", data->new_label, len);
+		printf("label '%s' defined on line %d\n", data->new_label, line_no);
 #endif
 
 		data->new_label[len] = '\0'; // add terminating 0

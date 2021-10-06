@@ -62,7 +62,6 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 					die("Relative jump too far");
 				}
 				operand = (uint16_t)*((uint8_t *)&offset); // copy signed representation into operand bit-for-bit
-				printf("offset: %2X signed: %d\n", (uint8_t)operand, (int8_t)operand);
 			}
 			for (int i = 0; i < data.operand_sz; i++) {
 				memory[memindex++] = (operand >> (i * 8)) & 0xFF;
