@@ -51,11 +51,11 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 			// copy operand
 		
 			// compute offset if instruction is relative jump
-			if (	data.opcode[0] == 0x18 ||
-					data.opcode[0] == 0x20 ||
-					data.opcode[0] == 0x28 ||
-					data.opcode[0] == 0x30 ||
-					data.opcode[0] == 0x38) {
+			if (	data.opcode[0] == JR_N		||
+					data.opcode[0] == JR_NZ_N	||
+					data.opcode[0] == JR_Z_N	||
+					data.opcode[0] == JR_NC_N	||
+					data.opcode[0] == JR_C_N	) {
 				signed int offset = (signed int)operand - (signed int)address - 2;
 				if (offset > 127 || offset < -128) {
 					fprintf(stderr, "Cannot perform relative jump to $%4X from line %d\n", operand, line_no);

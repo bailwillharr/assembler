@@ -69,6 +69,7 @@ size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 		address += line_assembled_size;
 		line_no++;
 	}
-	
+
 	return (size_t)address;
+
 }
