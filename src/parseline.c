@@ -16,16 +16,29 @@
  * ->operand_label
  * ->operand_literal
  */
-static void instruction_lookup(struct line_data *data, const char *opcode_name, const char *operand_name) {
+static void instruction_lookup(struct line_data *data, const char *opcode_name, char *operand_name) {
 
 	// first narrow down based on opcode_name
 	
-	// jr (offset to 'end')
-	data->opcode_sz = 1;
-	data->opcode[0] = 0x18;
-	data->operand_sz = 1; // for jr, this is always 1
-	data->operand_label = "end";
-//	data->operand_literal = 0;
+#ifdef DEBUG
+	printf("opcode_name: %s, operand_name: %s\n", opcode_name, operand_name);
+#endif
+
+	data->opcode_sz = 0;
+	data->operand_sz = 0;
+
+	switch (opcode_name[0]) {
+		case 'j':
+			switch (opcode_name[1]) {
+				case 'r':
+					data->opcode_sz = 1;
+					data->opcode[0] = JR_N;
+					data->operand_sz = 1;
+					data->operand_label = operand_name;
+					break;
+			}
+			break;
+		}
 
 }
 
@@ -33,7 +46,8 @@ static inline bool is_operand_char_valid(char c) {
 	if (isalnum(c)) return true;
 	switch (c) {
 	case ' ':
-	case '*':
+	case '+':
+	case '-':
 	case '_':
 	case '(':
 	case ')':
@@ -70,6 +84,9 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 	data->new_label = NULL;
 	data->opcode_sz = 0;
 	data->operand_sz = 0;
+	data->operand_label = NULL;
+
+	if (line[0] == ';') return 0;
 
 	int index = 0; // index into line
 
@@ -193,13 +210,12 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 		operand_str[operand_str_size] = 0; // null terminator
 	}
 
-	free(operand_str);
 
 	// END OPERAND PARSE
 
 	// figure out what the instruction is
 	instruction_lookup(data, opcode_name, operand_str);
-	
+
 	return data->opcode_sz + data->operand_sz;
 
 }

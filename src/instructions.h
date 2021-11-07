@@ -3,12 +3,10 @@
 
 #include <inttypes.h>
 
-// Both real and pseudo instructions
-
 // does not include null terminator
 #define OPCODE_NAME_MAX_LEN 4
 
-enum pseudo_opcode { PSEUDO_DB, PSEUDO_DW, PSEUDO_ORG };
+enum OpcodesPseudo { PSEUDO_DB, PSEUDO_DW, PSEUDO_ORG };
 
 enum OpcodesMain {
 /*	0			1			2			3			4			5			6			7
@@ -55,6 +53,16 @@ enum OpcodesMain {
 	RET_NC,		POP_DE,		JP_NC_NN,	OUT_xN_A,	CALL_NC_NN,	PUSH_DE,	SUB_N,		RST_10,
 	RET_C,		EXX,		JP_C_NN,	IN_A_xN,	CALL_C_NN,	PRE_IX,		SBC_A_N,	RST_18,
 
+	RET_PO,		POP_HL,		JP_PO_NN,	EX_xSP_HL,	CALL_PO_NN,	PUSH_HL,	AND_N,		RST_20,
+	RET_PE,		JP_xHL,		JP_PE_NN,	EX_DE_HL,	CALL_PE_NN,	PRE_EXTD,	XOR_N,		RST_28,
+
+	RET_P,		POP_AF,		JP_P_NN,	DI,			CALL_P_NN,	PUSH_AF,	OR_N,		RST_30,
+	RET_M,		LD_SP_HL,	JP_M_NN,	EI,			CALL_M_NN,	PRE_IY,		CP_N,		RST_38
+
+};
+
+enum OpcodesExtD {
+	IN_B_xC = 0xED40
 };
 
 #endif

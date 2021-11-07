@@ -20,6 +20,4 @@ clean:
 	rm -f $(BIN)
 	rm -f $(obj) $(dep)
 
-rebuild: clean all
-
-.PHONY: all clean rebuild
+.PHONY: all clean

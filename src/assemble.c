@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "symtable.h"
@@ -39,6 +40,11 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 			uint16_t operand;
 			if (data.operand_label != NULL) {
 				int symbol_value = symtable_search(symtable_head, data.operand_label);
+
+#ifdef DEBUG
+				printf("ASM: operand_label: %s, value: %d\n", data.operand_label, symbol_value);
+#endif
+
 				if (symbol_value == -1) {
 					fprintf(stderr, "Undefined symbol %s on line %d\n", data.operand_label, line_no);
 					die("Unable to find symbol");
@@ -47,6 +53,7 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 			} else {
 				operand = data.operand_literal;
 			}
+			free(data.operand_label);
 
 			// copy operand
 		

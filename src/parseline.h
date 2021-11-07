@@ -12,7 +12,7 @@ struct line_data {
 
 	ssize_t opcode_sz; // if 0, no opcode
 	uint8_t opcode[3]; // start at [0]
-	enum pseudo_opcode pseudo_op; // use if opcode_sz == -1
+	enum OpcodesPseudo pseudo_op; // use if opcode_sz == -1
 
 	size_t operand_sz; // if 0, no operand
 	char *operand_label; // when 0, use operand_literal instead

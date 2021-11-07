@@ -58,6 +58,7 @@ size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 		}
 		struct line_data data;
 		size_t line_assembled_size = parseline(line, &data, line_no);
+		free(data.operand_label);
 
 		if (data.new_label != NULL) {
 			struct symbol *new_symbol = calloc(sizeof(struct symbol), 1);
@@ -66,10 +67,29 @@ size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 			new_symbol->next = *symtable_head;
 			*symtable_head = new_symbol;
 		}
+		if (data.opcode_sz == -1 && data.pseudo_op == PSEUDO_ORG) {
+			if (data.new_label != NULL) die("Cannot define label on same line as .ORG");
+			if (data.operand_label != NULL) {
+				fprintf(stderr, "ERROR on line %d: .ORG cannot use labels\n", line_no);
+				exit(EXIT_FAILURE);
+			}
+			address = data.operand_literal;
+		}
 		address += line_assembled_size;
 		line_no++;
 	}
 
 	return (size_t)address;
+
+}
+
+void symtable_print(struct symbol *symtable_head) {
+
+	puts("\n********SYMBOL TABLE********\n");
+	printf("LEN: %lu\n", symtable_len(symtable_head));
+	for (struct symbol *current = symtable_head; current != NULL; current = current->next) {
+		printf("LABEL: %s\t\tVALUE: %d\t\tPTR: %p\t\tNEXT: %p\n", current->label, current->value, current, current->next);
+	}
+	puts("\n");
 
 }
