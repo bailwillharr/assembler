@@ -10,6 +10,7 @@
 
 void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 
+	// this can only be different to address when using .PHASE (which may not ever be implemented)
 	uintptr_t memindex = 0;
 
 	int line_no = 1;
@@ -58,17 +59,19 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 			// copy operand
 		
 			// compute offset if instruction is relative jump
-			if (	data.opcode[0] == JR_N		||
+			if (	data.opcode_sz == 1			&&
+				   (data.opcode[0] == JR_N		||
 					data.opcode[0] == JR_NZ_N	||
 					data.opcode[0] == JR_Z_N	||
 					data.opcode[0] == JR_NC_N	||
-					data.opcode[0] == JR_C_N	) {
+					data.opcode[0] == JR_C_N)	) {
 				signed int offset = (signed int)operand - (signed int)address - 2;
 				if (offset > 127 || offset < -128) {
 					fprintf(stderr, "Cannot perform relative jump to $%4X from line %d\n", operand, line_no);
+					fprintf(stderr, "data.opcode = %2X\n", data.opcode[0]);
 					die("Relative jump too far");
 				}
-				operand = (uint16_t)*((uint8_t *)&offset); // copy signed representation into operand bit-for-bit
+				operand = (int8_t)offset;
 			}
 			for (int i = 0; i < data.operand_sz; i++) {
 				memory[memindex++] = (operand >> (i * 8)) & 0xFF;
@@ -77,6 +80,7 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 		} else {
 			if (data.pseudo_op == PSEUDO_ORG) {
 				address = data.operand_literal;
+				memindex = address;
 			}
 		}
 		address += line_assembled_size;

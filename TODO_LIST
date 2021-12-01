@@ -1,7 +1,6 @@
 **** IMMEDIATE ****
 TODO - Actually parse the assembly instructions
 TODO - Add .db (bytes and strings) and .dw (16 bit words)
-TODO - Add .org pseudo instruction
 
 **** OPTIONAL ****
 TODO - Add support for .phase and .dephase
@@ -9,3 +8,4 @@ TODO - Add .ds for reserving blocks of memory
 
 **** COMPLETE ****
 DONE - Allow output file to be specified
+TODO - Add .org pseudo instruction

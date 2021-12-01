@@ -73,6 +73,7 @@ size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 				fprintf(stderr, "ERROR on line %d: .ORG cannot use labels\n", line_no);
 				exit(EXIT_FAILURE);
 			}
+			printf("ADDRESS change to %4X\n", data.operand_literal);
 			address = data.operand_literal;
 		}
 		address += line_assembled_size;

@@ -28,6 +28,10 @@ static void instruction_lookup(struct line_data *data, const char *opcode_name, 
 	data->operand_sz = 0;
 
 	switch (opcode_name[0]) {
+		case 'x':
+			data->opcode_sz = 1;
+			data->opcode[0] = XOR_A;
+			break;
 		case 'j':
 			switch (opcode_name[1]) {
 				case 'r':
@@ -37,6 +41,22 @@ static void instruction_lookup(struct line_data *data, const char *opcode_name, 
 					data->operand_label = operand_name;
 					break;
 			}
+			break;
+		case '.':
+			// PSEUDO OPS
+			if (strcmp(opcode_name + 1, "ORG") == 0) {
+
+				uint16_t newAddr;
+				sscanf(operand_name, "$%hX", &newAddr);
+
+				data->opcode_sz = -1;
+				data->pseudo_op = PSEUDO_ORG;
+				data->operand_sz = 2;
+				data->operand_label = NULL;
+				data->operand_literal = newAddr;
+			}
+			break;
+		default:
 			break;
 		}
 
@@ -74,6 +94,7 @@ static inline bool is_opcode_char_valid(char c)
 {
 	// opcode can only contain letters (uppercase or lowercase)
 	if (isalpha(c)) return true;
+	if (c == '.') return true;
 	else return false;
 }	
 
@@ -215,6 +236,11 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 
 	// figure out what the instruction is
 	instruction_lookup(data, opcode_name, operand_str);
+
+#ifdef DEBUG
+	printf("OPERAND_LABEL: %s\n", data->operand_label);
+	printf("OPERAND_LITERAL: %d\n", data->operand_literal);
+#endif
 
 	return data->opcode_sz + data->operand_sz;
 
