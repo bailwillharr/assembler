@@ -44,7 +44,7 @@ static void instruction_lookup(struct line_data *data, const char *opcode_name, 
 			break;
 		case '.':
 			// PSEUDO OPS
-			if (strcmp(opcode_name + 1, "ORG") == 0) {
+			if (strcmp(opcode_name + 1, "org") == 0) {
 
 				uint16_t newAddr;
 				sscanf(operand_name, "$%hX", &newAddr);
