@@ -1,2 +1,3 @@
 	.ORG $8000
-		xor a
+label_test
+	xor a

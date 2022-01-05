@@ -8,6 +8,42 @@
 #include "util.h"
 #include "parseline.h" 
 
+#define LABEL_MAX_LEN 16
+#define OPERAND_NAME_MAX_LEN 32
+
+
+
+
+
+
+struct ParsedOperand {
+	bool isIndirect;			// does the operand use (  ) ?
+	char reg[LABEL_MAX_LEN];	// can also be a flag or label; if IX/IY, 'value' becomes an offset
+	signed int value;
+};
+
+struct ParsedInstruction {
+	char opcode[4];
+	struct ParsedOperand operand1, operand2;
+};
+
+static void instruction_parse(const char *opcode, char *operands, struct ParsedInstruction *inst)
+{
+
+	printf("%s\n", opcode);
+
+}
+
+
+
+
+
+
+
+
+
+
+
 /* modifies the following members of 'data':
  * ->opcode_sz
  * ->opcode
@@ -16,7 +52,7 @@
  * ->operand_label
  * ->operand_literal
  */
-static void instruction_lookup(struct line_data *data, const char *opcode_name, char *operand_name) {
+static void instruction_lookup(const char *opcode_name, char *operand_name, struct line_data *data) {
 
 	// first narrow down based on opcode_name
 	
@@ -28,7 +64,7 @@ static void instruction_lookup(struct line_data *data, const char *opcode_name, 
 	data->operand_sz = 0;
 
 	switch (opcode_name[0]) {
-		case 'x':
+/*		case 'x':
 			data->opcode_sz = 1;
 			data->opcode[0] = XOR_A;
 			break;
@@ -42,13 +78,17 @@ static void instruction_lookup(struct line_data *data, const char *opcode_name, 
 					break;
 			}
 			break;
+*/
 		case '.':
 			// PSEUDO OPS
 			if (strcmp(opcode_name + 1, "org") == 0) {
 
+				printf(":)\n");
+
 				uint16_t newAddr;
 				sscanf(operand_name, "$%hX", &newAddr);
 
+				// -1 means pseudo opcode
 				data->opcode_sz = -1;
 				data->pseudo_op = PSEUDO_ORG;
 				data->operand_sz = 2;
@@ -57,6 +97,10 @@ static void instruction_lookup(struct line_data *data, const char *opcode_name, 
 			}
 			break;
 		default:
+			{	// NORMAL INSTRUCTION
+				struct ParsedInstruction instruction;
+				instruction_parse(opcode_name, operand_name, &instruction);
+			}
 			break;
 		}
 
@@ -147,6 +191,11 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 		// This means malloc() is only called during the first pass and not the second
 
 		// 'len' is now the length of the label name (ex. \0)
+
+		if (len > LABEL_MAX_LEN) {
+			fprintf(stderr, "line %d: label name too long\n", line_no);
+		}
+
 		data->new_label = malloc(len + 1);
 		for (int i = 0; i < len; i++) {
 			data->new_label[i] = line[i];
@@ -154,7 +203,7 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 		data->new_label[len] = 0;
 
 #ifdef DEBUG
-		printf("label '%s' defined on line %d\n", data->new_label, line_no);
+		fprintf(stderr, "label '%s' defined on line %d\n", data->new_label, line_no);
 #endif
 
 		data->new_label[len] = '\0'; // add terminating 0
@@ -231,17 +280,31 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 		operand_str[operand_str_size] = 0; // null terminator
 	}
 
+	if (operand_str_size > OPERAND_NAME_MAX_LEN) {
+		fprintf(stderr, "on line %d: operand too long\n", line_no);
+	}
 
 	// END OPERAND PARSE
 
+	// convert opcode and operands to all lowercase
+	for (int i = 0; i < OPCODE_NAME_MAX_LEN; i++) {
+		opcode_name[i] = tolower(opcode_name[i]);
+	}
+	for (int i = 0; i < operand_str_size; i++) {
+		operand_str[i] = tolower(operand_str[i]);
+	}
+
 	// figure out what the instruction is
-	instruction_lookup(data, opcode_name, operand_str);
+	instruction_lookup(opcode_name, operand_str, data);
 
 #ifdef DEBUG
 	printf("OPERAND_LABEL: %s\n", data->operand_label);
 	printf("OPERAND_LITERAL: %d\n", data->operand_literal);
 #endif
 
+	if (data->opcode_sz == -1) { // pseudo opcode
+		return 0;
+	}
 	return data->opcode_sz + data->operand_sz;
 
 }

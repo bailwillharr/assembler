@@ -1,1 +1,86 @@
-NEA Assembler
+**********************
+**** NEA ASSEMBLER ***
+**********************
+
+
+
+**** TODO ****
+
+* IMMEDIATE
+TODO - Actually parse the assembly instructions
+TODO - Add .db (bytes and strings) and .dw (16 bit words)
+
+* OPTIONAL
+TODO - Add support for .phase and .dephase
+TODO - Add .ds for reserving blocks of memory
+
+* COMPLETE
+DONE - Allow output file to be specified
+TODO - Add .org pseudo instruction
+
+
+
+**** NOTES ****
+
+Instructions will be split into a structure which can easily be converted into the correct opcode/operands.
+
+struct ParsedOperand {
+	bool isIndirect;	// does the operand use (  )
+	char register[8];	// if IX or IY, 'value' becomes an offset; can also be a flag or label
+	signed int value;
+}
+
+struct ParsedInstruction {
+	char opcode[4];
+	struct ParsedOperand operand1, operand2;
+};
+
+examples:
+
+//	BIT 4, (IX+50)
+{
+	"BIT",
+	{
+		false,
+		NULL,
+		4
+	},
+	{
+		true,
+		"IX",
+		50
+	}
+}
+
+// CALL PE, print
+{
+	"CALL",
+	{
+		false,
+		"PE",
+		NULL
+	},
+	{
+		false,
+		"print",
+		0
+	}
+}
+
+// LD (IY+42), A
+{
+	"LD",
+	{
+		true,
+		"IY",
+		42,
+	},
+	{
+		false,
+		"A",
+		NULL
+	}
+}
+
+
+
