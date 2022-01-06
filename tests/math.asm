@@ -18,6 +18,8 @@ div_d_e_2
 	djnz	div_d_e_loop
 	ret
 
+	jp nc, (ix-0X55)
+
 ; quotient goes in ac
 ; remainder goes in hl
 div_ac_de:

@@ -1,3 +1,0 @@
-	.ORG $8000
-label_test
-	xor a

@@ -10,11 +10,11 @@
 #include "assemble.h"
 
 // constants
-#define DEFAULT_OUTFILE_NAME "out.rom"
+#define DEFAULT_OUTFILE_NAME "out.bin"
 
 static void usage(char *argv0)
 {
-    fprintf(stderr, "usage: %s [-hv] file\n", argv0);
+    fprintf(stderr, "usage: %s [-hv] [-o output_file] file\n", argv0);
 }
 
 static void version()

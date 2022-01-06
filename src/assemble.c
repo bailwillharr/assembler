@@ -30,16 +30,16 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 		struct line_data data;
 		size_t line_assembled_size = parseline(line, &data, line_no);
 
-		if (data.opcode_sz != -1) {
+		if (data.opcode_sz > 0) {
 			// regular instruction
 
 			// copy opcode
-			for (int i = 0; i < data.opcode_sz; i++) {
+			for (unsigned int i = 0; i < data.opcode_sz; i++) {
 				memory[memindex++] = data.opcode[i];
 			}
 			// get operand
 			uint16_t operand;
-			if (data.operand_label != NULL) {
+			if (data.operand_label[0] != '\0') {
 				int symbol_value = symtable_search(symtable_head, data.operand_label);
 
 #ifdef DEBUG
@@ -47,14 +47,14 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 #endif
 
 				if (symbol_value == -1) {
-					fprintf(stderr, "Undefined symbol %s on line %d\n", data.operand_label, line_no);
+					fprintf(stderr, "Undefined label %s on line %d\n", data.operand_label, line_no);
+					fprintf(stderr, "halt = %2X opcode[0] = %2X (hex) label[0] = %2X (hex)\n", HALT, data.opcode[0], data.operand_label[0]);
 					die("Unable to find symbol");
 				}
 				operand = (unsigned)symbol_value & 0xFFFF;
 			} else {
 				operand = data.operand_literal;
 			}
-			free(data.operand_label);
 
 			// copy operand
 		
@@ -73,7 +73,7 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 				}
 				operand = (int8_t)offset;
 			}
-			for (int i = 0; i < data.operand_sz; i++) {
+			for (unsigned int i = 0; i < data.operand_sz; i++) {
 				memory[memindex++] = (operand >> (i * 8)) & 0xFF;
 			}
 

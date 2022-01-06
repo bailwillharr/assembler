@@ -24,9 +24,16 @@ TODO - Add .org pseudo instruction
 
 Instructions will be split into a structure which can easily be converted into the correct opcode/operands.
 
+enum OperandRegister {
+	A, F, B, C, D, E, H, L, I, R,
+	AF, BC, DE, HL, SP, IX, IY,
+	Z, NZ, C, NC, PE, PO, M, P
+};
+
 struct ParsedOperand {
 	bool isIndirect;	// does the operand use (  )
-	char register[8];	// if IX or IY, 'value' becomes an offset; can also be a flag or label
+	// register values: A, F, B, C, D, E, H, L, I, R, AF, BC, DE, HL, SP, IX, IY, Z, NZ, C, NC, PE, PO, M, P
+	enum OperandRegister;	// if IX or IY, 'value' becomes an offset;
 	signed int value;
 }
 
@@ -81,6 +88,3 @@ examples:
 		NULL
 	}
 }
-
-
-

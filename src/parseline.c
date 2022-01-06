@@ -8,39 +8,215 @@
 #include "util.h"
 #include "parseline.h" 
 
-#define LABEL_MAX_LEN 16
 #define OPERAND_NAME_MAX_LEN 32
 
 
 
-
-
-
+// all lowercase
 struct ParsedOperand {
 	bool isIndirect;			// does the operand use (  ) ?
 	char reg[LABEL_MAX_LEN];	// can also be a flag or label; if IX/IY, 'value' becomes an offset
 	signed int value;
 };
 
+static struct ParsedOperand operand_parse(const char *arg)
+{
+
+
+	struct ParsedOperand po = { 0 };
+
+	const char* lbkt_loc = strchr(arg, '(');
+	const char* rbkt_loc = strchr(arg, ')');
+	if (lbkt_loc != NULL && rbkt_loc != NULL) {
+		// operand has brackets
+		po.isIndirect = true;
+
+		if (lbkt_loc > rbkt_loc) {
+			die("mismatched brackets with operand: %s", arg);
+		}
+	} else {
+		po.isIndirect = false;
+	}
+
+	const char *reg_start = NULL;
+	for (int i = 0; arg[i] != '\0'; i++) {
+		// first find start of label/reg/flag, if it exists
+		if ( (isalpha(arg[i]) || arg[i] == '_') && arg[i-1] != '0' ) { // the last condition ensures hex values aren't mistaken
+			reg_start = arg + i;
+			break;
+		}
+	}
+
+	if (reg_start != NULL) {
+		// there is a label/reg/flag
+
+		// get the entire reg/label/flag string
+		for (int i = 0; i < LABEL_MAX_LEN; i++) {
+			if (isalnum(reg_start[i]) || reg_start[i] == '_') {
+				po.reg[i] = reg_start[i];
+			} else {
+				po.reg[i] = '\0';
+				break;
+			}
+		}
+	} else {
+		po.reg[0] = '\0';
+	}
+
+	// now get value/offset
+	const char *num_start = NULL;
+	for (int i = 0; arg[i] != '\0'; i++) {
+		if (isdigit(arg[i]) || arg[i] == '+' || arg[i] == '-') {
+			num_start = arg + i;
+			break;
+		}
+	}
+
+	if (num_start != NULL) {
+		// is there is a val/offset
+		
+		// copy it into buffer
+		char num_buffer[16] = { 0 };
+		for (int i = 0; i < 15; i++) {
+			if ( isdigit(num_start[i]) || ( ( i == 1 || i == 2 ) && tolower(num_start[i]) == 'x') ||
+					( i == 0 && ( (num_start[i] == '+') || (num_start[i] == '-') ) )
+					  ) { // 'x' is in case of hexadecimal
+				num_buffer[i] = num_start[i];
+			} else {
+				num_buffer[i] = '\0';
+				break;
+			}
+		}
+
+		// convert it to integer
+		int num = strtol(num_buffer, NULL, 0); // 0 base means either 10, 8, or 16 depending on input
+		po.value = (signed int)num;
+		
+	} else {
+		po.value = 0;
+	}
+
+
+	return po;
+}
+
 struct ParsedInstruction {
-	char opcode[4];
+	char opcode[OPCODE_NAME_MAX_LEN+1];
+	int operands;
 	struct ParsedOperand operand1, operand2;
 };
 
-static void instruction_parse(const char *opcode, char *operands, struct ParsedInstruction *inst)
+static struct ParsedInstruction instruction_parse(const char *opcode, char *operands)
 {
 
-	printf("%s\n", opcode);
+	struct ParsedInstruction inst;
+
+	printf("\n\n\t%s\t%s\n", opcode, operands);
+
+	for (int i = 0; i < OPCODE_NAME_MAX_LEN+1; i++) {
+		inst.opcode[i] = tolower(opcode[i]);
+		if (opcode[i] == '\0') {
+			inst.opcode[i] = '\0';
+			break;
+		}
+	}
+
+	if (operands == NULL) {
+		inst.operands = 0;
+		return inst;
+	}
+
+	// operands
+
+	char args[OPERAND_NAME_MAX_LEN+1];
+	strcpy(args, operands);
+
+	char *arg2 = NULL;
+
+	for (int i = 0; args[i] != '\0'; i++) {
+
+		// convert tabs to spaces
+		if (args[i] == '\t') args[i] = ' ';
+
+		// find if there is a comma, and replace with '\0' to split operands
+		if (args[i] == ',') {
+			args[i] = '\0';
+			arg2 = args + i + 1;
+		}
+		
+	}
+
+	char *arg1 = args;
+
+	inst.operand1 = operand_parse(arg1);
+	if (arg2 != NULL) {
+		inst.operand2 = operand_parse(arg2);
+		inst.operands = 2;
+	} else {
+		inst.operands = 1;
+	}
+
+	return inst;
 
 }
 
+struct DecodedInstruction {
+	size_t opcode_sz;
+	uint8_t opcode[3]; // start at [0]
+	size_t operand_sz; // if 0, no operand
+	char operand_label[LABEL_MAX_LEN]; // if empty, use literal
+	uint16_t operand_literal;
+};
+
+struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
+{
+	struct DecodedInstruction d;
+
+	d.opcode_sz = 0;
+	d.operand_sz = 0;
+	d.operand_label[0] = '\0';
 
 
+	if        (strcmp(p.opcode, "nop"	) == 0) {
+		d.opcode_sz = 1;
+		d.opcode[0] = NOP;
+	} else if (strcmp(p.opcode, "halt"	) == 0) {
+		d.opcode_sz = 1;
+		d.opcode[0] = HALT;
+	} else if (strcmp(p.opcode, "jp"	) == 0) {
+		if (p.operands == 1) {
+			if (p.operand1.isIndirect == 0) {
+				d.opcode_sz = 1;
+				d.opcode[0] = JP_NN;
+				d.operand_sz = 2;
+				if (p.operand1.reg[0] != '\0') {
+					strcpy(d.operand_label, p.operand1.reg);
+				} else {
+					d.operand_literal = p.operand1.value;
+				}
+			} else {
+				if (strcmp(p.operand1.reg, "hl") == 0) {
+					d.opcode_sz = 1;
+					d.opcode[0] = JP_xHL;
+				}
+			}
+		}
+	} else if (strcmp(p.opcode, "inc"	) == 0) {
+		if (p.operands == 1) {
+			if (p.operand1.isIndirect == 0) {
+				if (strcmp(p.operand1.reg, "bc") == 0) {
+					d.opcode_sz = 1;
+					d.opcode[0] = INC_BC;
+				} else if (strcmp(p.operand1.reg, "d") == 0) {
+					d.opcode_sz = 1;
+					d.opcode[0] = INC_D;
+				}
+			}
+		}
+	}
 
-
-
-
-
+	return d;
+}
 
 
 
@@ -56,34 +232,13 @@ static void instruction_lookup(const char *opcode_name, char *operand_name, stru
 
 	// first narrow down based on opcode_name
 	
-#ifdef DEBUG
-	printf("opcode_name: %s, operand_name: %s\n", opcode_name, operand_name);
-#endif
-
 	data->opcode_sz = 0;
 	data->operand_sz = 0;
 
 	switch (opcode_name[0]) {
-/*		case 'x':
-			data->opcode_sz = 1;
-			data->opcode[0] = XOR_A;
-			break;
-		case 'j':
-			switch (opcode_name[1]) {
-				case 'r':
-					data->opcode_sz = 1;
-					data->opcode[0] = JR_N;
-					data->operand_sz = 1;
-					data->operand_label = operand_name;
-					break;
-			}
-			break;
-*/
 		case '.':
 			// PSEUDO OPS
 			if (strcmp(opcode_name + 1, "org") == 0) {
-
-				printf(":)\n");
 
 				uint16_t newAddr;
 				sscanf(operand_name, "$%hX", &newAddr);
@@ -92,36 +247,40 @@ static void instruction_lookup(const char *opcode_name, char *operand_name, stru
 				data->opcode_sz = -1;
 				data->pseudo_op = PSEUDO_ORG;
 				data->operand_sz = 2;
-				data->operand_label = NULL;
+				data->operand_label[0] = '\0';
 				data->operand_literal = newAddr;
 			}
 			break;
 		default:
 			{	// NORMAL INSTRUCTION
 				struct ParsedInstruction instruction;
-				instruction_parse(opcode_name, operand_name, &instruction);
+				instruction = instruction_parse(opcode_name, operand_name);
+
+				if (instruction.operands >= 1)
+					printf("1 { reg=%s, val=%d, isIndirect=%d }\n", instruction.operand1.reg, instruction.operand1.value, instruction.operand1.isIndirect);
+				if (instruction.operands == 2)
+					printf("2 { reg=%s, val=%d, isIndirect=%d }\n", instruction.operand2.reg, instruction.operand2.value, instruction.operand2.isIndirect);
+
+				// now figure out wtf this instruction means
+				struct DecodedInstruction decoded;
+				decoded = instruction_decode(instruction);
+
+				data->opcode_sz = decoded.opcode_sz;
+				data->opcode[0] = decoded.opcode[0];
+				data->opcode[1] = decoded.opcode[1];
+				data->opcode[2] = decoded.opcode[2];
+
+				data->operand_sz = decoded.operand_sz;
+				if (decoded.operand_label[0] == '\0')
+					data->operand_label[0] = '\0';
+				else
+					strcpy(data->operand_label, decoded.operand_label);
+				data->operand_literal = decoded.operand_literal;
+
 			}
 			break;
 		}
 
-}
-
-static inline bool is_operand_char_valid(char c) {
-	if (isalnum(c)) return true;
-	switch (c) {
-	case ' ':
-	case '+':
-	case '-':
-	case '_':
-	case '(':
-	case ')':
-	case ',':
-	case '$':
-	case '%':
-	case '\t':
-		return true;
-	}
-	return false;
 }
 
 // should a character be in a label or not
@@ -142,6 +301,24 @@ static inline bool is_opcode_char_valid(char c)
 	else return false;
 }	
 
+static inline bool is_operand_char_valid(char c) {
+	if (isalnum(c)) return true;
+	switch (c) {
+	case ' ':
+	case '+':
+	case '-':
+	case '_':
+	case '(':
+	case ')':
+	case ',':
+	case '$':
+	case '\'':
+	case '\t':
+		return true;
+	}
+	return false;
+}
+
 // returns number of bytes used by the line's instruction
 size_t parseline(char *line, struct line_data *data, int line_no)
 {
@@ -149,7 +326,7 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 	data->new_label = NULL;
 	data->opcode_sz = 0;
 	data->operand_sz = 0;
-	data->operand_label = NULL;
+	data->operand_label[0] = '\0';
 
 	if (line[0] == ';') return 0;
 
@@ -198,14 +375,8 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 
 		data->new_label = malloc(len + 1);
 		for (int i = 0; i < len; i++) {
-			data->new_label[i] = line[i];
+			data->new_label[i] = tolower(line[i]);
 		}
-		data->new_label[len] = 0;
-
-#ifdef DEBUG
-		fprintf(stderr, "label '%s' defined on line %d\n", data->new_label, line_no);
-#endif
-
 		data->new_label[len] = '\0'; // add terminating 0
 
 		index += len;
@@ -296,11 +467,6 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 
 	// figure out what the instruction is
 	instruction_lookup(opcode_name, operand_str, data);
-
-#ifdef DEBUG
-	printf("OPERAND_LABEL: %s\n", data->operand_label);
-	printf("OPERAND_LITERAL: %d\n", data->operand_literal);
-#endif
 
 	if (data->opcode_sz == -1) { // pseudo opcode
 		return 0;

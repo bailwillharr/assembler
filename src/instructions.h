@@ -11,13 +11,13 @@ enum OpcodesPseudo { PSEUDO_DB, PSEUDO_DW, PSEUDO_ORG };
 enum OpcodesMain {
 /*	0			1			2			3			4			5			6			7
  *	8			9			A			B			C			D			E			F		*/
-	NOP,		LD_BC_NN,	LD_xBC_A,	INC_BC,		INC_B,		DEC_B,		LD_B_N,		RLCA,
+	NOP=0,		LD_BC_NN,	LD_xBC_A,	INC_BC,		INC_B,		DEC_B,		LD_B_N,		RLCA,
 	EX_AF_AF,	ADD_HL_BC,	LD_A_xBC,	DEC_BC,		INC_C,		DEC_C,		LD_C_N,		RRCA,
 
 	DJNZ_N,		LD_DE_NN,	LD_xDE_A,	INC_DE,		INC_D,		DEC_D,		LD_D_N,		RLA,
 	JR_N,		ADD_HL_DE,	LD_A_xDE,	DEC_DE,		INC_E,		DEC_E,		LD_E_N,		RRA,
 
-	JR_NZ_N,	LD_HL_NN,	LD_xNN,HL,	INC_HL,		INC_H,		DEC_H,		LD_H,N,		DAA,
+	JR_NZ_N,	LD_HL_NN,	LD_xNN_HL,	INC_HL,		INC_H,		DEC_H,		LD_H_N,		DAA,
 	JR_Z_N,		ADD_HL_HL,	LD_HL_xNN,	DEC_HL,		INC_L,		DEC_L,		LD_L_N,		CPL,
 
 	JR_NC_N,	LD_SP_NN,	LD_xNN_A,	INC_SP,		INC_xHL,	DEC_xHL,	LD_xHL_N,	SCF,
@@ -32,7 +32,7 @@ enum OpcodesMain {
 	LD_H_B,		LD_H_C,		LD_H_D,		LD_H_E,		LD_H_H,		LD_H_L,		LD_H_xHL,	LD_H_A,
 	LD_L_B,		LD_L_C,		LD_L_D,		LD_L_E,		LD_L_H,		LD_L_L,		LD_L_xHL,	LD_L_A,
 
-	LD_xHL,B,	LD_xHL_C,	LD_xHL_D,	LD_xHL_E,	LD_xHL_H,	LD_xHL_L,	HALT,		LD_xHL_A,
+	LD_xHL_B,	LD_xHL_C,	LD_xHL_D,	LD_xHL_E,	LD_xHL_H,	LD_xHL_L,	HALT,		LD_xHL_A,
 	LD_A_B,		LD_A_C,		LD_A_D,		LD_A_E,		LD_A_H,		LD_A_L,		LD_A_xHL,	LD_A_A,
 
 	ADD_A_B,	ADD_A_C,	ADD_A_D,	ADD_A_E,	ADD_A_H,	ADD_A_L,	ADD_A_xHL,	ADD_A_A,
