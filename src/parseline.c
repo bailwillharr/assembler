@@ -15,7 +15,7 @@
 // all lowercase
 struct ParsedOperand {
 	bool isIndirect;			// does the operand use (  ) ?
-	char reg[LABEL_MAX_LEN];	// can also be a flag or label; if IX/IY, 'value' becomes an offset
+	char reg[LABEL_MAX_LEN+1];	// can also be a flag or label; if IX/IY, 'value' becomes an offset
 	signed int value;
 };
 
@@ -111,7 +111,7 @@ static struct ParsedInstruction instruction_parse(const char *opcode, char *oper
 
 	struct ParsedInstruction inst;
 
-	printf("\n\n\t%s\t%s\n", opcode, operands);
+	printf("\n\t%s\t%s\n", opcode, operands);
 
 	for (int i = 0; i < OPCODE_NAME_MAX_LEN+1; i++) {
 		inst.opcode[i] = tolower(opcode[i]);
@@ -164,58 +164,129 @@ struct DecodedInstruction {
 	size_t opcode_sz;
 	uint8_t opcode[3]; // start at [0]
 	size_t operand_sz; // if 0, no operand
-	char operand_label[LABEL_MAX_LEN]; // if empty, use literal
+	char operand_label[LABEL_MAX_LEN+1]; // if empty, use literal
 	uint16_t operand_literal;
 };
 
-struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
+struct InstructionDecodeEntry {
+	// result
+	size_t	operand_sz;
+
+	// pattern to match
+	const char 	   *p_instruction_name;
+	int				p_operand_count;
+	// operand 1
+	bool			p_op1_indirect;
+	const char		p_op1_reg[LABEL_MAX_LEN+1];
+	// operand 2
+	bool			p_op2_indirect;
+	const char		p_op2_reg[LABEL_MAX_LEN+1];
+};
+
+const struct InstructionDecodeEntry DECODE_TABLE_MAIN[] = {
+	{	0,	"nop",	0,								},
+	{	2,	"ld",	2,	false,	"bc",	false,	0	},
+	{	0,	"ld",	2,	true,	"bc",	false,	"a"	},
+};
+
+static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 {
+
 	struct DecodedInstruction d;
+	d.opcode_sz = 0; // if this remains 0, the opcode was not found
 
-	d.opcode_sz = 0;
-	d.operand_sz = 0;
-	d.operand_label[0] = '\0';
-
-
-	if        (strcmp(p.opcode, "nop"	) == 0) {
-		d.opcode_sz = 1;
-		d.opcode[0] = NOP;
-	} else if (strcmp(p.opcode, "halt"	) == 0) {
-		d.opcode_sz = 1;
-		d.opcode[0] = HALT;
-	} else if (strcmp(p.opcode, "jp"	) == 0) {
-		if (p.operands == 1) {
-			if (p.operand1.isIndirect == 0) {
-				d.opcode_sz = 1;
-				d.opcode[0] = JP_NN;
-				d.operand_sz = 2;
-				if (p.operand1.reg[0] != '\0') {
-					strcpy(d.operand_label, p.operand1.reg);
-				} else {
-					d.operand_literal = p.operand1.value;
+	for (int i = 0; i < (int)(sizeof(DECODE_TABLE_MAIN) / sizeof(struct InstructionDecodeEntry)); i++) {
+		const struct InstructionDecodeEntry e = DECODE_TABLE_MAIN[i];
+		if (strcmp(e.p_instruction_name, p.opcode) == 0) {
+			if (e.p_operand_count == p.operands) {
+				if (e.p_operand_count == 0) {
+					d.opcode_sz = 1;
+					d.opcode[0] = i;
+					d.operand_sz = 0;
+					d.operand_label[0] = 0;
+					break;
 				}
-			} else {
-				if (strcmp(p.operand1.reg, "hl") == 0) {
-					d.opcode_sz = 1;
-					d.opcode[0] = JP_xHL;
-				}
-			}
-		}
-	} else if (strcmp(p.opcode, "inc"	) == 0) {
-		if (p.operands == 1) {
-			if (p.operand1.isIndirect == 0) {
-				if (strcmp(p.operand1.reg, "bc") == 0) {
-					d.opcode_sz = 1;
-					d.opcode[0] = INC_BC;
-				} else if (strcmp(p.operand1.reg, "d") == 0) {
-					d.opcode_sz = 1;
-					d.opcode[0] = INC_D;
+				if (e.p_operand_count >= 1) {
+
+					if (e.p_op1_indirect != p.operand1.isIndirect) continue;
+					if (e.p_operand_count == 2 && (e.p_op2_indirect != p.operand2.isIndirect) ) continue;
+
+					if (e.p_operand_count == 1) {
+						if (e.p_op1_reg[0] == 0) {
+							// op1 value is definitely operand
+							if (p.operand1.reg[0] == 0) {
+								d.operand_label[0] = 0;
+								d.operand_literal = p.operand1.value;
+							} else {
+								strncpy(d.operand_label, p.operand1.reg, LABEL_MAX_LEN);
+							}
+							d.opcode_sz = 1;
+							d.opcode[0] = i;
+							d.operand_sz = e.operand_sz;
+							break;
+						} else if (strcmp(e.p_op1_reg, p.operand1.reg) == 0) {
+							// match, no final operand
+							d.opcode_sz = 1;
+							d.opcode[0] = i;
+							d.operand_sz = 0;
+							d.operand_label[0] = 0;
+							break;
+						} else continue;
+					}
+
+					if (e.p_operand_count == 2) {
+						// three possible matching conditions:
+						// MATCH,	LBL_VAL
+						// LBL/VAL,	MATCH
+						// MATCH,	MATCH
+					
+						if (strcmp(e.p_op1_reg, p.operand1.reg) == 0 && strcmp(e.p_op2_reg, p.operand2.reg) == 0) {
+							// MATCH,	MATCH
+							d.opcode_sz = 1;
+							d.opcode[0] = i;
+							d.operand_sz = 0;
+							d.operand_label[0] = 0;
+							break;
+						} else if (strcmp(e.p_op2_reg, p.operand2.reg) == 0) {
+							// LBL_VAL,		MATCH
+							
+							if (p.operand1.reg[0] == 0) {
+								d.operand_label[0] = 0;
+								d.operand_literal = p.operand1.value;
+							} else {
+								strncpy(d.operand_label, p.operand1.reg, LABEL_MAX_LEN);
+							}
+							d.opcode_sz = 1;
+							d.opcode[0] = i;
+							d.operand_sz = e.operand_sz;
+							break;
+						} else if (strcmp(e.p_op1_reg, p.operand1.reg) == 0) {
+							// MATCH,	LBL_VAL
+
+							if (p.operand2.reg[0] == 0) {
+								d.operand_label[0] = 0;
+								d.operand_literal = p.operand2.value;
+							} else {
+								strncpy(d.operand_label, p.operand2.reg, LABEL_MAX_LEN);
+							}
+							d.opcode_sz = 1;
+							d.opcode[0] = i;
+							d.operand_sz = e.operand_sz;
+							break;
+
+						}
+					}
 				}
 			}
 		}
 	}
 
+	if (d.opcode_sz == 0) {
+		die("unknown instruction");
+	}
+
 	return d;
+
 }
 
 

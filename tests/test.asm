@@ -1,7 +1,5 @@
-	.ORG $8000
-label_test
-	inc bc
-	halt
-	jp		label_test
+; testing opcodes
 	nop
-	jp		(hl)
+TEST_LABEL:
+	ld		(bc), a
+	ld		bc,		 TEST_LABEL

@@ -6,7 +6,7 @@
 
 #include "instructions.h"
 
-#define LABEL_MAX_LEN 16
+#define LABEL_MAX_LEN 15
 
 struct line_data {
 	
@@ -17,7 +17,7 @@ struct line_data {
 	enum OpcodesPseudo pseudo_op; // use if opcode_sz == -1
 
 	size_t operand_sz; // if 0, no operand
-	char operand_label[LABEL_MAX_LEN]; // when empty, use operand_literal instead
+	char operand_label[LABEL_MAX_LEN+1]; // when empty, use operand_literal instead
 	uint16_t operand_literal; // little endian
 };
 
