@@ -7,7 +7,8 @@
 **** TODO ****
 
 * IMMEDIATE
-TODO - Actually parse the assembly instructions
+TODO - Make .org use 0x instead of $ for hex
+TODO - Add all of the main 256 assembly instructions
 TODO - Add .db (bytes and strings) and .dw (16 bit words)
 
 * OPTIONAL
@@ -15,8 +16,9 @@ TODO - Add support for .phase and .dephase
 TODO - Add .ds for reserving blocks of memory
 
 * COMPLETE
+DONE - Actually parse the assembly instructions
 DONE - Allow output file to be specified
-TODO - Add .org pseudo instruction
+DONE - Add .org pseudo instruction
 
 
 

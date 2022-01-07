@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 
     // FIRST PASS
 #ifdef DEBUG
-	printf("FIRST PASS\n");
+	fprintf(stderr, "FIRST PASS\n");
 #endif
     // symtable is a linked list of symbol:address pairs
     struct symbol *symtable_head = NULL;
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
     
     // SECOND PASS
 #ifdef DEBUG
-	printf("SECOND PASS\n");
+	fprintf(stderr, "SECOND PASS\n");
 #endif
     char* memory = calloc(memory_size, 1);
     if (memory == NULL) die("Failed calloc()");

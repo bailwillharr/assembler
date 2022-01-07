@@ -50,8 +50,6 @@ size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 		if (line[len - 1] != '\n') {
 			if (fgetc(fp) == EOF) {
 				line[len - 1] = '\n';
-				// DEBUG
-				printf("At end of file\n");
 			} else {
 				die("Line too long");
 			}
@@ -69,10 +67,9 @@ size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 		if (data.opcode_sz == -1 && data.pseudo_op == PSEUDO_ORG) {
 			if (data.new_label != NULL) die("Cannot define label on same line as .ORG");
 			if (data.operand_label[0] != '\0') {
-				fprintf(stderr, "ERROR on line %d: .ORG cannot use labels\n", line_no);
-				exit(EXIT_FAILURE);
+				die("ERROR on line %d: .ORG cannot use labels\n", line_no);
 			}
-			printf("ADDRESS change to %4X\n", data.operand_literal);
+			fprintf(stderr, "ADDRESS change to %4X on line %d\n", data.operand_literal, line_no);
 			address = data.operand_literal;
 		}
 		address += line_assembled_size;
@@ -85,11 +82,11 @@ size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 
 void symtable_print(struct symbol *symtable_head) {
 
-	puts("\n********SYMBOL TABLE********\n");
-	printf("LEN: %lu\n", symtable_len(symtable_head));
+	fputs("\n********SYMBOL TABLE********\n", stderr);
+	fprintf(stderr, "LEN: %lu\n", symtable_len(symtable_head));
 	for (struct symbol *current = symtable_head; current != NULL; current = current->next) {
-		printf("LABEL: %s\t\tVALUE: %d\t\tPTR: %p\t\tNEXT: %p\n", current->label, current->value, current, current->next);
+		fprintf(stderr, "LABEL: %s\t\tVALUE: %d\t\tPTR: %p\t\tNEXT: %p\n", current->label, current->value, current, current->next);
 	}
-	puts("\n");
+	fputs("\n", stderr);
 
 }

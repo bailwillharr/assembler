@@ -43,13 +43,11 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 				int symbol_value = symtable_search(symtable_head, data.operand_label);
 
 #ifdef DEBUG
-				printf("ASM: operand_label: %s, value: %d\n", data.operand_label, symbol_value);
+				fprintf(stderr, "ASM: operand_label: %s, value: %d\n", data.operand_label, symbol_value);
 #endif
 
 				if (symbol_value == -1) {
-					fprintf(stderr, "Undefined label %s on line %d\n", data.operand_label, line_no);
-					fprintf(stderr, "halt = %2X opcode[0] = %2X (hex) label[0] = %2X (hex)\n", HALT, data.opcode[0], data.operand_label[0]);
-					die("Unable to find symbol");
+					die("undefined label %s on line %d\n", data.operand_label, line_no);
 				}
 				operand = (unsigned)symbol_value & 0xFFFF;
 			} else {
@@ -67,9 +65,8 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 					data.opcode[0] == JR_C_N)	) {
 				signed int offset = (signed int)operand - (signed int)address - 2;
 				if (offset > 127 || offset < -128) {
-					fprintf(stderr, "Cannot perform relative jump to $%4X from line %d\n", operand, line_no);
-					fprintf(stderr, "data.opcode = %2X\n", data.opcode[0]);
-					die("Relative jump too far");
+					fprintf(stderr, "Cannot perform relative jump to $%4X (line %d)\n", operand, line_no);
+					die("relative jump too far");
 				}
 				operand = (int8_t)offset;
 			}
