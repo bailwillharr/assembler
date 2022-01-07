@@ -22,7 +22,6 @@ struct ParsedOperand {
 static struct ParsedOperand operand_parse(const char *arg)
 {
 
-
 	struct ParsedOperand po = { 0 };
 
 	const char* lbkt_loc = strchr(arg, '(');
@@ -133,8 +132,8 @@ static struct ParsedInstruction instruction_parse(const char *opcode, char *oper
 
 	// operands
 
-	char args[OPERAND_NAME_MAX_LEN+1];
-	strcpy(args, operands);
+	char args[OPERAND_NAME_MAX_LEN+2];
+	strncpy(args, operands, OPERAND_NAME_MAX_LEN+1);
 
 	char *arg2 = NULL;
 
@@ -228,7 +227,7 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 								d.operand_label[0] = 0;
 								d.operand_literal = p.operand1.value;
 							} else {
-								strncpy(d.operand_label, p.operand1.reg, LABEL_MAX_LEN);
+								strncpy(d.operand_label, p.operand1.reg, LABEL_MAX_LEN+1);
 							}
 							d.opcode_sz = 1;
 							d.opcode[0] = i;
@@ -263,7 +262,7 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 								d.operand_label[0] = 0;
 								d.operand_literal = p.operand1.value;
 							} else {
-								strncpy(d.operand_label, p.operand1.reg, LABEL_MAX_LEN);
+								strncpy(d.operand_label, p.operand1.reg, LABEL_MAX_LEN+1);
 							}
 							d.opcode_sz = 1;
 							d.opcode[0] = i;
@@ -275,7 +274,7 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 								d.operand_label[0] = 0;
 								d.operand_literal = p.operand2.value;
 							} else {
-								strncpy(d.operand_label, p.operand2.reg, LABEL_MAX_LEN);
+								strncpy(d.operand_label, p.operand2.reg, LABEL_MAX_LEN+1);
 							}
 							d.opcode_sz = 1;
 							d.opcode[0] = i;
@@ -355,7 +354,7 @@ static void instruction_lookup(const char *opcode_name, char *operand_name, stru
 				if (decoded.operand_label[0] == '\0')
 					data->operand_label[0] = '\0';
 				else
-					strcpy(data->operand_label, decoded.operand_label);
+					strncpy(data->operand_label, decoded.operand_label, LABEL_MAX_LEN+1);
 				data->operand_literal = decoded.operand_literal;
 
 			}
