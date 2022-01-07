@@ -1,1 +1,2 @@
-	ld		bc,		0xBEEF
+	.org	0x1000
+	nop

@@ -320,7 +320,7 @@ static void instruction_lookup(const char *opcode_name, char *operand_name, stru
 			if (strcmp(opcode_name + 1, "org") == 0) {
 
 				uint16_t newAddr;
-				sscanf(operand_name, "$%hX", &newAddr);
+				newAddr = (uint16_t)strtol(operand_name, NULL, 0);
 
 				// -1 means pseudo opcode
 				data->opcode_sz = -1;

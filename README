@@ -7,7 +7,6 @@
 **** TODO ****
 
 * IMMEDIATE
-TODO - Make .org use 0x instead of $ for hex
 TODO - Add all of the main 256 assembly instructions
 TODO - Add .db (bytes and strings) and .dw (16 bit words)
 
@@ -19,17 +18,3 @@ TODO - Add .ds for reserving blocks of memory
 DONE - Actually parse the assembly instructions
 DONE - Allow output file to be specified
 DONE - Add .org pseudo instruction
-
-
-
-**** NOTES ****
-
-information given to instruction_decode():
-	- opcode name
-	- number of operands
-	- first operand reg/flag/label
-	- first operand value/offset
-	- first operand using indirect? ()
-	- second operand reg/flag/label
-	- second operand value/offset
-	- second operand using indirect? ()
