@@ -1,5 +1,7 @@
 ; testing opcodes
-	nop
+	ld		hl, 0xBEEF
+	ld		(TEST_LABEL), hl
+	halt
 TEST_LABEL:
-	ld		(bc), a
-	ld		bc,		 TEST_LABEL
+	nop
+	nop
