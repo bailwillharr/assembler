@@ -188,6 +188,7 @@ struct InstructionDecodeEntry {
 };
 
 const struct InstructionDecodeEntry DECODE_TABLE_MAIN[] = {
+	// 0x00
 	{	0,	"nop",	0,								},
 	{	2,	"ld",	2,	false,	"bc",	false,	""	},
 	{	0,	"ld",	2,	true,	"bc",	false,	"a"	},
@@ -196,6 +197,31 @@ const struct InstructionDecodeEntry DECODE_TABLE_MAIN[] = {
 	{	0,	"dec",	1,	false,	"b",				},
 	{	1,	"ld",	2,	false,	"b",	false,	""	},
 	{	0,	"rlca",	0,								},
+	{	0,	"ex",	2,	false,	"af",	false,	"af"},
+	{	0,	"add",	2,	false,	"hl",	false,	"bc"},
+	{	0,	"ld",	2,	false,	"a",	true,	"bc"},
+	{	0,	"dec",	1,	false,	"bc",				},
+	{	0,	"inc",	1,	false,	"c",				},
+	{	0,	"dec",	1,	false,	"c",				},
+	{	1,	"ld",	2,	false,	"c",	false,	""	},
+	{	0,	"rrca",	0,								},
+	// 0x10
+	{	1,	"djnz",	1,	false,	"",					},
+	{	2,	"ld",	2,	false,	"de",	false,	""	},
+	{	0,	"ld",	2,	true,	"de",	false,	"a"	},
+	{	0,	"inc",	1,	false,	"de",				},
+	{	0,	"inc",	1,	false,	"d",				},
+	{	0,	"dec",	1,	false,	"d",				},
+	{	1,	"ld",	2,	false,	"d",	false,	""	},
+	{	0,	"rla",	0,								},
+	{	1,	"jr",	1,	false,	"",					},
+	{	0,	"add",	2,	false,	"hl",	false,	"de"},
+	{	0,	"ld",	2,	false,	"a",	true,	"de"},
+	{	0,	"dec",	1,	false,	"de",				},
+	{	0,	"inc",	1,	false,	"e",				},
+	{	0,	"dec",	1,	false,	"e",				},
+	{	1,	"ld",	2,	false,	"e",	false,	""	},
+	{	0,	"rra",	0,								},
 };
 
 static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
