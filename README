@@ -7,13 +7,11 @@
 **** TODO ****
 
 * IMMEDIATE
-TODO - Stop registers from being matched as labels
 TODO - Add .db (bytes and strings) and .dw (16 bit words)
 
 * OPTIONAL
 TODO - Add other Z80 instructions
-TODO - Add support for .phase and .dephase
-TODO - Add .ds for reserving blocks of memory
+TODO - Add .equ for equates
 
 * COMPLETE
 DONE - Add all of the main 256 assembly instructions
