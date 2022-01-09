@@ -7,14 +7,16 @@
 **** TODO ****
 
 * IMMEDIATE
-TODO - Add all of the main 256 assembly instructions
+TODO - Stop registers from being matched as labels
 TODO - Add .db (bytes and strings) and .dw (16 bit words)
 
 * OPTIONAL
+TODO - Add other Z80 instructions
 TODO - Add support for .phase and .dephase
 TODO - Add .ds for reserving blocks of memory
 
 * COMPLETE
+DONE - Add all of the main 256 assembly instructions
 DONE - Actually parse the assembly instructions
 DONE - Allow output file to be specified
 DONE - Add .org pseudo instruction

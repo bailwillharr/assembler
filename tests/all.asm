@@ -1,6 +1,6 @@
 	.org	0
 	nop
-	ld		bc, 0x1234
+	ld		bc, END
 	ld		(bc), a
 	inc		bc
 	inc		b
@@ -15,8 +15,9 @@
 	dec		c
 	ld		c, 123
 	rrca
-	djnz	END
-	ld		de,	END
+
+	djnz	0x00
+	ld		de,	0x00
 	ld		(de), a
 	inc		de
 	inc		d
@@ -31,18 +32,18 @@
 	dec		e
 	ld		e, 0x77
 	rra
-
-	jr		nz, 0x33
-	ld		hl,	END
+	
+	jr		nz, END
+	ld		hl,	0x1234
 	ld		(0xF000), hl
 	inc		hl
 	inc		h
 	dec		h
 	ld		h, 0x21
 	daa
-	jr		z, 123
+	jr		z, END
 	add		hl,hl
-	ld		hl, (END)
+	ld		hl, (0x9999)
 	dec		hl
 	inc		l
 	dec		l
@@ -50,7 +51,7 @@
 	cpl
 
 	jr		nc, END
-	ld		sp, END
+	ld		sp, 0x7777
 	ld		(0x1234), a
 	inc		sp
 	inc		(hl)

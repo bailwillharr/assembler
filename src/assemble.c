@@ -42,7 +42,7 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 			if (data.operand_label[0] != '\0') {
 				int symbol_value = symtable_search(symtable_head, data.operand_label);
 
-#ifdef DEBUG
+#ifndef NDEBUG
 				fprintf(stderr, "ASM: operand_label: %s, value: %d\n", data.operand_label, symbol_value);
 #endif
 
@@ -75,7 +75,7 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 				memory[memindex++] = (operand >> (i * 8)) & 0xFF;
 			}
 
-		} else {
+		} else if (data.opcode_sz == -1) {
 			if (data.pseudo_op == PSEUDO_ORG) {
 				address = data.operand_literal;
 				memindex = address;

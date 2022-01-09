@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 
 
     // FIRST PASS
-#ifdef DEBUG
+#ifndef NDEBUG
 	fprintf(stderr, "FIRST PASS\n");
 #endif
     // symtable is a linked list of symbol:address pairs
@@ -87,13 +87,13 @@ int main(int argc, char *argv[])
     size_t memory_size; // holds the size of the output binary
     memory_size = symtable_build(fp, &symtable_head);
 
-#ifdef DEBUG
+#ifndef NDEBUG
 	// print symbol table after first pass
 	symtable_print(symtable_head);
 #endif
     
     // SECOND PASS
-#ifdef DEBUG
+#ifndef NDEBUG
 	fprintf(stderr, "SECOND PASS\n");
 #endif
     char* memory = calloc(memory_size, 1);

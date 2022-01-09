@@ -90,7 +90,6 @@ static struct ParsedOperand operand_parse(const char *arg)
 		}
 
 		// convert it to integer
-		printf("num_buffer: %s\n", num_buffer);
 		int num = strtol(num_buffer, NULL, 0); // 0 base means either 10, 8, or 16 depending on input
 		po.value = (signed int)num;
 		
@@ -113,7 +112,7 @@ static struct ParsedInstruction instruction_parse(const char *opcode, char *oper
 
 	struct ParsedInstruction inst;
 
-#ifdef DEBUG
+#ifndef NDEBUG
 	fprintf(stderr, "\n\t%s\t%s\n", opcode, operands);
 #endif
 
@@ -257,6 +256,210 @@ const struct InstructionDecodeEntry DECODE_TABLE_MAIN[] = {
 	{	1,	"ld",	2,	false,	"a",	false,	""	},
 	{	0,	"ccf",	0,								},
 	// 0x40
+	{	0,	"ld",	2,	false,	"b",	false,	"b"	},
+	{	0,	"ld",	2,	false,	"b",	false,	"c"	},
+	{	0,	"ld",	2,	false,	"b",	false,	"d"	},
+	{	0,	"ld",	2,	false,	"b",	false,	"e"	},
+	{	0,	"ld",	2,	false,	"b",	false,	"h"	},
+	{	0,	"ld",	2,	false,	"b",	false,	"l"	},
+	{	0,	"ld",	2,	false,	"b",	true,	"hl"},
+	{	0,	"ld",	2,	false,	"b",	false,	"a"	},
+	{	0,	"ld",	2,	false,	"c",	false,	"b"	},
+	{	0,	"ld",	2,	false,	"c",	false,	"c"	},
+	{	0,	"ld",	2,	false,	"c",	false,	"d"	},
+	{	0,	"ld",	2,	false,	"c",	false,	"e"	},
+	{	0,	"ld",	2,	false,	"c",	false,	"h"	},
+	{	0,	"ld",	2,	false,	"c",	false,	"l"	},
+	{	0,	"ld",	2,	false,	"c",	true,	"hl"},
+	{	0,	"ld",	2,	false,	"c",	false,	"a"	},
+	// 0x50
+	{	0,	"ld",	2,	false,	"d",	false,	"b"	},
+	{	0,	"ld",	2,	false,	"d",	false,	"c"	},
+	{	0,	"ld",	2,	false,	"d",	false,	"d"	},
+	{	0,	"ld",	2,	false,	"d",	false,	"e"	},
+	{	0,	"ld",	2,	false,	"d",	false,	"h"	},
+	{	0,	"ld",	2,	false,	"d",	false,	"l"	},
+	{	0,	"ld",	2,	false,	"d",	true,	"hl"},
+	{	0,	"ld",	2,	false,	"d",	false,	"a"	},
+	{	0,	"ld",	2,	false,	"e",	false,	"b"	},
+	{	0,	"ld",	2,	false,	"e",	false,	"c"	},
+	{	0,	"ld",	2,	false,	"e",	false,	"d"	},
+	{	0,	"ld",	2,	false,	"e",	false,	"e"	},
+	{	0,	"ld",	2,	false,	"e",	false,	"h"	},
+	{	0,	"ld",	2,	false,	"e",	false,	"l"	},
+	{	0,	"ld",	2,	false,	"e",	true,	"hl"},
+	{	0,	"ld",	2,	false,	"e",	false,	"a"	},
+	//	0x60
+	{	0,	"ld",	2,	false,	"h",	false,	"b"	},
+	{	0,	"ld",	2,	false,	"h",	false,	"c"	},
+	{	0,	"ld",	2,	false,	"h",	false,	"d"	},
+	{	0,	"ld",	2,	false,	"h",	false,	"e"	},
+	{	0,	"ld",	2,	false,	"h",	false,	"h"	},
+	{	0,	"ld",	2,	false,	"h",	false,	"l"	},
+	{	0,	"ld",	2,	false,	"h",	true,	"hl"},
+	{	0,	"ld",	2,	false,	"h",	false,	"a"	},
+	{	0,	"ld",	2,	false,	"l",	false,	"b"	},
+	{	0,	"ld",	2,	false,	"l",	false,	"c"	},
+	{	0,	"ld",	2,	false,	"l",	false,	"d"	},
+	{	0,	"ld",	2,	false,	"l",	false,	"e"	},
+	{	0,	"ld",	2,	false,	"l",	false,	"h"	},
+	{	0,	"ld",	2,	false,	"l",	false,	"l"	},
+	{	0,	"ld",	2,	false,	"l",	true,	"hl"},
+	{	0,	"ld",	2,	false,	"l",	false,	"a"	},
+	// 0x70
+	{	0,	"ld",	2,	true,	"hl",	false,	"b"	},
+	{	0,	"ld",	2,	true,	"hl",	false,	"c"	},
+	{	0,	"ld",	2,	true,	"hl",	false,	"d"	},
+	{	0,	"ld",	2,	true,	"hl",	false,	"e"	},
+	{	0,	"ld",	2,	true,	"hl",	false,	"h"	},
+	{	0,	"ld",	2,	true,	"hl",	false,	"l"	},
+	{	0,	"halt",	0,								},
+	{	0,	"ld",	2,	true,	"hl",	false,	"a"	},
+	{	0,	"ld",	2,	false,	"a",	false,	"b"	},
+	{	0,	"ld",	2,	false,	"a",	false,	"c"	},
+	{	0,	"ld",	2,	false,	"a",	false,	"d"	},
+	{	0,	"ld",	2,	false,	"a",	false,	"e"	},
+	{	0,	"ld",	2,	false,	"a",	false,	"h"	},
+	{	0,	"ld",	2,	false,	"a",	false,	"l"	},
+	{	0,	"ld",	2,	false,	"a",	true,	"hl"},
+	{	0,	"ld",	2,	false,	"a",	false,	"a"	},
+	// 0x80
+	{	0,	"add",	2,	false,	"a",	false,	"b"	},
+	{	0,	"add",	2,	false,	"a",	false,	"c"	},
+	{	0,	"add",	2,	false,	"a",	false,	"d"	},
+	{	0,	"add",	2,	false,	"a",	false,	"e"	},
+	{	0,	"add",	2,	false,	"a",	false,	"h"	},
+	{	0,	"add",	2,	false,	"a",	false,	"l"	},
+	{	0,	"add",	2,	false,	"a",	true,	"hl"},
+	{	0,	"add",	2,	false,	"a",	false,	"a"	},
+	{	0,	"adc",	2,	false,	"a",	false,	"b"	},
+	{	0,	"adc",	2,	false,	"a",	false,	"c"	},
+	{	0,	"adc",	2,	false,	"a",	false,	"d"	},
+	{	0,	"adc",	2,	false,	"a",	false,	"e"	},
+	{	0,	"adc",	2,	false,	"a",	false,	"h"	},
+	{	0,	"adc",	2,	false,	"a",	false,	"l"	},
+	{	0,	"adc",	2,	false,	"a",	true,	"hl"},
+	{	0,	"adc",	2,	false,	"a",	false,	"a"	},
+	// 0x90
+	{	0,	"sub",	1,	false,	"b",				},
+	{	0,	"sub",	1,	false,	"c",				},
+	{	0,	"sub",	1,	false,	"d",				},
+	{	0,	"sub",	1,	false,	"e",				},
+	{	0,	"sub",	1,	false,	"h",				},
+	{	0,	"sub",	1,	false,	"l",				},
+	{	0,	"sub",	1,	true,	"hl",				},
+	{	0,	"sub",	1,	false,	"a",				},
+	{	0,	"sdc",	2,	false,	"a",	false,	"b"	},
+	{	0,	"sdc",	2,	false,	"a",	false,	"c"	},
+	{	0,	"sdc",	2,	false,	"a",	false,	"d"	},
+	{	0,	"sdc",	2,	false,	"a",	false,	"e"	},
+	{	0,	"sdc",	2,	false,	"a",	false,	"h"	},
+	{	0,	"sdc",	2,	false,	"a",	false,	"l"	},
+	{	0,	"sdc",	2,	false,	"a",	true,	"hl"},
+	{	0,	"sdc",	2,	false,	"a",	false,	"a"	},
+	// 0xA0
+	{	0,	"and",	1,	false,	"b",				},
+	{	0,	"and",	1,	false,	"c",				},
+	{	0,	"and",	1,	false,	"d",				},
+	{	0,	"and",	1,	false,	"e",				},
+	{	0,	"and",	1,	false,	"h",				},
+	{	0,	"and",	1,	false,	"l",				},
+	{	0,	"and",	1,	true,	"hl",				},
+	{	0,	"and",	1,	false,	"a",				},
+	{	0,	"xor",	1,	false,	"b",				},
+	{	0,	"xor",	1,	false,	"c",				},
+	{	0,	"xor",	1,	false,	"d",				},
+	{	0,	"xor",	1,	false,	"e",				},
+	{	0,	"xor",	1,	false,	"h",				},
+	{	0,	"xor",	1,	false,	"l",				},
+	{	0,	"xor",	1,	true,	"hl",				},
+	{	0,	"xor",	1,	false,	"a",				},
+	// 0xB0
+	{	0,	"or",	1,	false,	"b",				},
+	{	0,	"or",	1,	false,	"c",				},
+	{	0,	"or",	1,	false,	"d",				},
+	{	0,	"or",	1,	false,	"e",				},
+	{	0,	"or",	1,	false,	"h",				},
+	{	0,	"or",	1,	false,	"l",				},
+	{	0,	"or",	1,	true,	"hl",				},
+	{	0,	"or",	1,	false,	"a",				},
+	{	0,	"cp",	1,	false,	"b",				},
+	{	0,	"cp",	1,	false,	"c",				},
+	{	0,	"cp",	1,	false,	"d",				},
+	{	0,	"cp",	1,	false,	"e",				},
+	{	0,	"cp",	1,	false,	"h",				},
+	{	0,	"cp",	1,	false,	"l",				},
+	{	0,	"cp",	1,	true,	"hl",				},
+	{	0,	"cp",	1,	false,	"a",				},
+	// 0xC0
+	{	0,	"ret",	1,	false,	"nz",				},
+	{	0,	"pop",	1,	false,	"bc",				},
+	{	2,	"jp",	2,	false,	"nz",	false,	""	},
+	{	2,	"jp",	1,	false,	"",					},
+	{	2,	"call",	2,	false,	"nz",	false,	""	},
+	{	0,	"push",	1,	false,	"bc",				},
+	{	1,	"add",	2,	false,	"a",	false,	""	},
+	{	0,	"rst",	1,	false,	"0x00",				},
+	{	0,	"ret",	1,	false,	"z",				},
+	{	0,	"ret",	0,								},
+	{	2,	"jp",	2,	false,	"z",	false,	""	},
+	{	0,	"",		0,								},
+	{	2,	"call",	2,	false,	"z",	false,	""	},
+	{	2,	"call",	1,	false,	"",					},
+	{	1,	"adc",	2,	false,	"a",	false,	""	},
+	{	0,	"rst",	1,	false,	"0x08",				},
+	// 0xD0
+	{	0,	"ret",	1,	false,	"nc",				},
+	{	0,	"pop",	1,	false,	"de",				},
+	{	2,	"jp",	2,	false,	"nc",	false,	""	},
+	{	1, 	"out",	2,	true,	"",		false,	"a"	},
+	{	2,	"call",	2,	false,	"nc",	false,	""	},
+	{	0,	"push",	1,	false,	"de",				},
+	{	1,	"sub",	1,	false,	"",					},
+	{	0,	"rst",	1,	false,	"0x10",				},
+	{	0,	"ret",	1,	false,	"c",				},
+	{	0,	"exx",	0,								},
+	{	2,	"jp",	2,	false,	"c",	false,	""	},
+	{	1,	"in",	2,	false,	"a",	true,	""	},
+	{	2,	"call",	2,	false,	"c",	false,	""	},
+	{	0,	"",		0,								},
+	{	1,	"sbc",	2,	false,	"a",	false,	""	},
+	{	0,	"rst",	1,	false,	"0x18",				},
+	// 0xE0
+	{	0,	"ret",	1,	false,	"po",				},
+	{	0,	"pop",	1,	false,	"hl",				},
+	{	2,	"jp",	2,	false,	"po",	false,	""	},
+	{	0, 	"ex",	2,	true,	"sp",	false,	"hl"},
+	{	2,	"call",	2,	false,	"po",	false,	""	},
+	{	0,	"push",	1,	false,	"hl",				},
+	{	1,	"and",	1,	false,	"",					},
+	{	0,	"rst",	1,	false,	"0x20",				},
+	{	0,	"ret",	1,	false,	"pe",				},
+	{	0,	"jp",	1,	true,	"hl",				},
+	{	2,	"jp",	2,	false,	"pe",	false,	""	},
+	{	0,	"ex",	2,	false,	"de",	false,	"hl"},
+	{	2,	"call",	2,	false,	"pe",	false,	""	},
+	{	0,	"",		0,								},
+	{	1,	"xor",	1,	false,	"",					},
+	{	0,	"rst",	1,	false,	"0x28",				},
+	// 0xF0
+	{	0,	"ret",	1,	false,	"p",				},
+	{	0,	"pop",	1,	false,	"af",				},
+	{	2,	"jp",	2,	false,	"p",	false,	""	},
+	{	0, 	"di",	0,								},
+	{	2,	"call",	2,	false,	"p",	false,	""	},
+	{	0,	"push",	1,	false,	"af",				},
+	{	1,	"or",	1,	false,	"",					},
+	{	0,	"rst",	1,	false,	"0x30",				},
+	{	0,	"ret",	1,	false,	"m",				},
+	{	0,	"ld",	2,	false,	"sp",	false,	"hl"},
+	{	2,	"jp",	2,	false,	"m",	false,	""	},
+	{	0,	"ei",	0,								},
+	{	2,	"call",	2,	false,	"m",	false,	""	},
+	{	0,	"",		0,								},
+	{	1,	"cp",	1,	false,	"",					},
+	{	0,	"rst",	1,	false,	"0x38",				},
+
 };
 
 static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
@@ -353,6 +556,8 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 		die("unknown instruction");
 	}
 
+	fprintf(stderr, "instruction: %2X\n", d.opcode[0]);
+
 	return d;
 
 }
@@ -395,7 +600,7 @@ static void instruction_lookup(const char *opcode_name, char *operand_name, stru
 				struct ParsedInstruction instruction;
 				instruction = instruction_parse(opcode_name, operand_name);
 
-#ifdef DEBUG
+#ifndef NDEBUG
 				if (instruction.operands >= 1)
 					fprintf(stderr, "1 { reg=%s, val=%d, isIndirect=%d }\n", instruction.operand1.reg, instruction.operand1.value, instruction.operand1.isIndirect);
 				if (instruction.operands == 2)
