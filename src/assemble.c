@@ -8,6 +8,13 @@
 
 #include "assemble.h"
 
+const uint8_t JR_N		= 0x18;
+const uint8_t JR_NZ_N	= 0x20;
+const uint8_t JR_Z_N	= 0x28;
+const uint8_t JR_NC_N	= 0x30;
+const uint8_t JR_C_N	= 0x38;
+const uint8_t DJNZ_N	= 0x10;
+
 void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 
 	// this can only be different to address when using .PHASE (which may not ever be implemented)

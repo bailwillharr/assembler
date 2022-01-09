@@ -4,9 +4,10 @@
 #include <aio.h>
 #include <stdint.h>
 
-#include "instructions.h"
-
 #define LABEL_MAX_LEN 15
+#define OPCODE_NAME_MAX_LEN 4
+
+enum OpcodesPseudo { PSEUDO_DB, PSEUDO_DW, PSEUDO_ORG };
 
 struct line_data {
 	

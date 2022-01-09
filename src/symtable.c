@@ -5,7 +5,6 @@
 
 #include "util.h"
 #include "symtable.h"
-#include "instructions.h"
 #include "parseline.h"
 
 /*

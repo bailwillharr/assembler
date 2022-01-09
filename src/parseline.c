@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#include "instructions.h"
 #include "util.h"
 #include "parseline.h" 
 
@@ -161,6 +160,21 @@ static struct ParsedInstruction instruction_parse(const char *opcode, char *oper
 
 	return inst;
 
+}
+
+static bool label_is_reserved(const char *lbl)
+{
+	const char *RESERVED[] = {
+		"a", "f", "b", "c", "d", "e", "h", "l",
+		"af", "bc", "de", "hl",
+		"i", "r", "ir", "sp", "pc",
+		"ix", "iy", "ixh", "ixl", "iyh", "iyl",
+		"z", "c", "m", "pe", "nz", "nc", "po", "p"
+	};
+	for (int i = 0; i < sizeof(RESERVED) / sizeof(const char *); i++) {
+		if (strcmp(RESERVED[i], lbl) == 0) return true;
+	}
+	return false;
 }
 
 struct DecodedInstruction {
@@ -513,7 +527,13 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 						// LBL/VAL,	MATCH
 						// MATCH,	MATCH
 					
-						if (( e.p_op1_reg[0] != 0 && strcmp(e.p_op1_reg, p.operand1.reg) == 0) && (e.p_op2_reg[0] != 0 && strcmp(e.p_op2_reg, p.operand2.reg) == 0)) {
+						if ( e.p_op1_reg[0] != 0 && e.p_op2_reg[0] != 0 ) {
+							if (strcmp(e.p_op1_reg, p.operand1.reg) != 0) {
+								continue;
+							}
+							if (strcmp(e.p_op2_reg, p.operand2.reg) != 0) {
+								continue;
+							}
 							// MATCH,	MATCH
 							d.opcode_sz = 1;
 							d.opcode[0] = i;
@@ -526,6 +546,7 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 								d.operand_label[0] = 0;
 								d.operand_literal = p.operand1.value;
 							} else {
+								if (label_is_reserved(p.operand1.reg)) continue;
 								strncpy(d.operand_label, p.operand1.reg, LABEL_MAX_LEN+1);
 							}
 							d.opcode_sz = 1;
@@ -533,11 +554,14 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 							d.operand_sz = e.operand_sz;
 							break;
 						} else if (e.p_op1_reg[0] != 0 && strcmp(e.p_op1_reg, p.operand1.reg) == 0 && e.operand_sz != 0) {
-							// MATCH,	LBL_VAL
+							printf("test1\n");
 							if (p.operand2.reg[0] == 0) {
 								d.operand_label[0] = 0;
 								d.operand_literal = p.operand2.value;
 							} else {
+								printf("test2, p.operand2.reg: %s, e.p_op1_reg: %s\n", p.operand2.reg, e.p_op1_reg);
+								if (label_is_reserved(p.operand2.reg)) continue;
+								printf("test3\n");
 								strncpy(d.operand_label, p.operand2.reg, LABEL_MAX_LEN+1);
 							}
 							d.opcode_sz = 1;
