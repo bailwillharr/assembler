@@ -1,2 +1,2 @@
-language = "bash"
-run = "cd build && make && ./assembler"
+language = "c"
+run = "mkdir -p build && cd build && cmake .. && make"
