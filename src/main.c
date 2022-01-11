@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 
     // Generate binary machine code
     struct stat st; // structure holds file type information
-    if (stat(argv[i], &st) != EXIT_SUCCESS) {
+    if (stat(argv[i], &st) != 0) {
         die(strerror(errno)); // error if file doesn't exist
     }
     if (!S_ISREG(st.st_mode)) {
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 
 
     // Write binary machine code to file
-    if (stat(outfile_name, &st) == EXIT_SUCCESS) {
+    if (stat(outfile_name, &st) == 0) {
         if (!S_ISREG(st.st_mode)) {
             die("A regular file must be specified");
         }
