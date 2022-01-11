@@ -554,14 +554,11 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 							d.operand_sz = e.operand_sz;
 							break;
 						} else if (e.p_op1_reg[0] != 0 && strcmp(e.p_op1_reg, p.operand1.reg) == 0 && e.operand_sz != 0) {
-							printf("test1\n");
 							if (p.operand2.reg[0] == 0) {
 								d.operand_label[0] = 0;
 								d.operand_literal = p.operand2.value;
 							} else {
-								printf("test2, p.operand2.reg: %s, e.p_op1_reg: %s\n", p.operand2.reg, e.p_op1_reg);
 								if (label_is_reserved(p.operand2.reg)) continue;
-								printf("test3\n");
 								strncpy(d.operand_label, p.operand2.reg, LABEL_MAX_LEN+1);
 							}
 							d.opcode_sz = 1;
@@ -579,8 +576,6 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 	if (d.opcode_sz == 0) {
 		die("unknown instruction");
 	}
-
-	fprintf(stderr, "instruction: %2X\n", d.opcode[0]);
 
 	return d;
 

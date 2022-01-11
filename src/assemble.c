@@ -60,8 +60,6 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 			} else {
 				operand = data.operand_literal;
 			}
-
-			// copy operand
 		
 			// compute offset if instruction is relative jump
 			if (	data.opcode_sz == 1			&&
@@ -78,6 +76,19 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 				}
 				operand = (int8_t)offset;
 			}
+
+#ifndef NDEBUG
+			fprintf(stderr, "instruction:");
+			for (int i = 0; i < data.opcode_sz; i++) {
+				fprintf(stderr, " %02X", data.opcode[i]);
+			}
+			for (int i = 0; i < data.operand_sz; i++) {
+				fprintf(stderr, " %02X", (operand >> (8 * i)) & 0xFF);
+			}
+			fprintf(stderr, "\n");
+#endif
+
+			// copy operand
 			for (unsigned int i = 0; i < data.operand_sz; i++) {
 				memory[memindex++] = (operand >> (i * 8)) & 0xFF;
 			}
