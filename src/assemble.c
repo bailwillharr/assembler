@@ -29,7 +29,8 @@ void assemble(FILE *fp, const struct symbol *symtable_head, char *memory) {
 		if (len == 0) continue;
 		if (line[len - 1] != '\n') {
 			if (fgetc(fp) == EOF) {
-				line[len - 1] = '\n';
+				line[len] = '\n';
+				line[len+1] = '\0';
 			} else {
 				die("Line too long");
 			}

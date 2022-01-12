@@ -48,7 +48,8 @@ size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 		if (len == 0) continue;
 		if (line[len - 1] != '\n') {
 			if (fgetc(fp) == EOF) {
-				line[len - 1] = '\n';
+				line[len] = '\n';
+				line[len+1] = '\0';
 			} else {
 				die("Line too long");
 			}
