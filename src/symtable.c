@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <string.h>
 
@@ -85,7 +86,7 @@ size_t symtable_build(FILE *fp, struct symbol **symtable_head)
 void symtable_print(struct symbol *symtable_head) {
 
 	fputs("\n********SYMBOL TABLE********\n", stderr);
-	fprintf(stderr, "LEN: %lu\n", symtable_len(symtable_head));
+	fprintf(stderr, "LEN: %" PRIu64 "\n", symtable_len(symtable_head));
 	for (struct symbol *current = symtable_head; current != NULL; current = current->next) {
 		fprintf(stderr, "LABEL: %s\t\tVALUE: %d\t\tPTR: %p\t\tNEXT: %p\n", current->label, current->value, current, current->next);
 	}

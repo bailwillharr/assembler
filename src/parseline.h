@@ -1,8 +1,7 @@
 #ifndef PARSELINE_H
 #define PARSELINE_H
 
-#include <aio.h>
-#include <stdint.h>
+#include <inttypes.h>
 
 #define LABEL_MAX_LEN 15
 #define OPCODE_NAME_MAX_LEN 4
