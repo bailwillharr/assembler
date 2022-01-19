@@ -612,6 +612,10 @@ static void instruction_lookup(const char *opcode_name, char *operand_name, stru
 				data->operand_sz = 2;
 				data->operand_label[0] = '\0';
 				data->operand_literal = newAddr;
+			} else if (strcmp(opcode_name + 1, "db") == 0) {
+
+			} else if (strcmp(opcode_name + 1, "db") == 0) {
+				
 			}
 			break;
 		default:
