@@ -2,6 +2,30 @@
 
 \usepackage[british]{babel}
 
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=C,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=4
+}
+
 \title{A Level Computer Science NEA}
 \author{Bailey Harrison}
 %\date{January 1 1984}
@@ -24,9 +48,10 @@ many of the high-level control statements that most programmers are used to, suc
 as 'if' statements and 'for' loops.
 
 Generally, there is a 1:1 correspondence between assembler opcodes (an acronym
-specifying the operation) and machine code instructions. Assemblers also support a
-few other features, notably labels. A label serves as a placeholder for a memory
-address, which can be used to implement variables and functions in your program.
+specifying the operation) and machine code instructions (the binary data that a CPU
+decodes and executes). Assemblers also support a few other features, notably labels.
+A label serves as a placeholder for a memory address, which can be used to implement
+variables and functions in a program.
 
 \section{Problem}
 
@@ -39,6 +64,30 @@ address, which can be used to implement variables and functions in your program.
 
 
 \chapter{Technical Solution}
+
+\section{Source Files}
+
+\subsection{main.c}
+\lstinputlisting{../src/main.c}
+\subsection{symtable.c}
+\lstinputlisting{../src/symtable.c}
+\subsection{assemble.c}
+\lstinputlisting{../src/assemble.c}
+\subsection{parseline.c}
+\lstinputlisting{../src/parseline.c}
+\subsection{util.c}
+\lstinputlisting{../src/util.c}
+
+\section{Header Files}
+
+\subsection{symtable.h}
+\lstinputlisting{../src/symtable.h}
+\subsection{assemble.h}
+\lstinputlisting{../src/assemble.h}
+\subsection{parseline.h}
+\lstinputlisting{../src/parseline.h}
+\subsection{util.h}
+\lstinputlisting{../src/util.h}
 
 
 
