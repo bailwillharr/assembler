@@ -573,6 +573,117 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 		}
 	}
 
+	// manually test for extended instructions (ED)
+	if (	(strcmp(p.opcode, "ld") == 0) &&
+			p.operands == 2 &&
+			p.operand1.isIndirect == false &&
+			(strcmp(p.operand1.reg, "bc") == 0) &&
+			p.operand2.isIndirect == true &&
+			((label_is_reserved(p.operand2.reg) == false) || (p.operand2.reg[0] == 0)) ){
+				d.opcode_sz = 2;
+				d.opcode[0] = 0xED;
+				d.opcode[1] = 0x4B;
+				d.operand_sz = 2;
+				if (p.operand2.reg[0] != 0) {
+					strncpy(d.operand_label, p.operand2.reg, LABEL_MAX_LEN+1);
+				} else {
+					d.operand_label[0] = 0;
+					d.operand_literal = p.operand2.value;
+				}
+	}
+	if (	(strcmp(p.opcode, "bit") == 0) &&
+			p.operands == 2 &&
+			p.operand1.isIndirect == false &&
+			p.operand1.value == 0 &&
+			p.operand2.isIndirect == false &&
+			(strcmp(p.operand2.reg, "a") == 0)){
+				d.opcode_sz = 2;
+				d.opcode[0] = 0xCB;
+				d.opcode[1] = 0x47;
+				d.operand_sz = 0;
+				d.operand_label[0] = 0;
+	}
+	if (	(strcmp(p.opcode, "bit") == 0) &&
+			p.operands == 2 &&
+			p.operand1.isIndirect == false &&
+			p.operand1.value == 7 &&
+			p.operand2.isIndirect == false &&
+			(strcmp(p.operand2.reg, "a") == 0)){
+				d.opcode_sz = 2;
+				d.opcode[0] = 0xCB;
+				d.opcode[1] = 0x7F;
+				d.operand_sz = 0;
+				d.operand_label[0] = 0;
+	}
+	if (	(strcmp(p.opcode, "set") == 0) &&
+			p.operands == 2 &&
+			p.operand1.isIndirect == false &&
+			p.operand1.value == 0 &&
+			p.operand2.isIndirect == false &&
+			(strcmp(p.operand2.reg, "b") == 0)){
+				d.opcode_sz = 2;
+				d.opcode[0] = 0xCB;
+				d.opcode[1] = 0xC0;
+				d.operand_sz = 0;
+				d.operand_label[0] = 0;
+	}
+	if (	(strcmp(p.opcode, "set") == 0) &&
+			p.operands == 2 &&
+			p.operand1.isIndirect == false &&
+			p.operand1.value == 7 &&
+			p.operand2.isIndirect == false &&
+			(strcmp(p.operand2.reg, "b") == 0)){
+				d.opcode_sz = 2;
+				d.opcode[0] = 0xCB;
+				d.opcode[1] = 0xF8;
+				d.operand_sz = 0;
+				d.operand_label[0] = 0;
+	}
+
+	if (	(strcmp(p.opcode, "sla") == 0) &&
+			p.operands == 1 &&
+			p.operand1.isIndirect == false &&
+			(strcmp(p.operand1.reg, "b") == 0)){
+				d.opcode_sz = 2;
+				d.opcode[0] = 0xCB;
+				d.opcode[1] = 0x20;
+				d.operand_sz = 0;
+				d.operand_label[0] = 0;
+	}
+	if (	(strcmp(p.opcode, "sla") == 0) &&
+			p.operands == 1 &&
+			p.operand1.isIndirect == false &&
+			(strcmp(p.operand1.reg, "a") == 0)){
+				d.opcode_sz = 2;
+				d.opcode[0] = 0xCB;
+				d.opcode[1] = 0x27;
+				d.operand_sz = 0;
+				d.operand_label[0] = 0;
+	}
+
+	if (	(strcmp(p.opcode, "sra") == 0) &&
+			p.operands == 1 &&
+			p.operand1.isIndirect == false &&
+			(strcmp(p.operand1.reg, "a") == 0)){
+				d.opcode_sz = 2;
+				d.opcode[0] = 0xCB;
+				d.opcode[1] = 0x2F;
+				d.operand_sz = 0;
+				d.operand_label[0] = 0;
+	}
+	if (	(strcmp(p.opcode, "sra") == 0) &&
+			p.operands == 1 &&
+			p.operand1.isIndirect == false &&
+			(strcmp(p.operand1.reg, "b") == 0)){
+				d.opcode_sz = 2;
+				d.opcode[0] = 0xCB;
+				d.opcode[1] = 0x28;
+				d.operand_sz = 0;
+				d.operand_label[0] = 0;
+	}
+
+
+
 	if (d.opcode_sz == 0) {
 		die("unknown instruction");
 	}

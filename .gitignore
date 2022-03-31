@@ -1,7 +1,10 @@
 /build/
+/Debug/
+/Release/
 compile_commands.json
 *.o
 *.d
 *.bin
 .replit
 .vscode/
+.ccls-cache/
