@@ -891,7 +891,7 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 			if (	line[index] != '\n' &&
 				line[index] != '\t' &&
 				line[index] != ' '	) {
-				die("line %d: Opcode contains invalid characters, char: %2X\n", line_no, line[index]);
+				die("line %d: Opcode contains invalid characters, char: %c\n", line_no, line[index]);
 				exit(EXIT_FAILURE);
 			} else break;
 		}

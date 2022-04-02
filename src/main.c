@@ -25,12 +25,12 @@ static void version()
 int main(int argc, char *argv[])
 {
 
-	char outfile_name[64] = DEFAULT_OUTFILE_NAME;
-
     if (argc <= 1) {
         usage(argv[0]);
         exit(EXIT_FAILURE);
     }
+
+	char outfile_name[64] = DEFAULT_OUTFILE_NAME;
 
     int o = 1; // the char index into the argument string
     int i;
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 
     if (argc > i + 1) die("Multiple files specified");
 
-    // Generate binary machine code
+    // Open the source file for reading
     struct stat st; // structure holds file type information
     if (stat(argv[i], &st) != 0) {
         die(strerror(errno)); // error if file doesn't exist
