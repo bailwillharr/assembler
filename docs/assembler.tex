@@ -114,7 +114,7 @@ argument, the symbol table is used to find the corresponding value. The value
 can then be easily appended to the machine code file as the source file is being
 read.
 
-\section{System Objectives / Specification}
+\section{System objectives / specification}
 
 \begin{enumerate}
 
@@ -150,7 +150,7 @@ read.
 
 \chapter{Design}
 
-\section{Getting Command Line Arguments}
+\section{Getting command line arguments}
 
 To begin this project, the first problem I decide to tackle is parsing command
 line arguments. Once I get to the stage where a user can specify an input file
@@ -243,7 +243,7 @@ this option is not used.
 	if (argc > i + 1) die("Multiple files specified");
 \end{lstlisting}
 
-\section{Pass 1: Symbol Table}
+\section{Pass 1: symbol table}
 
 Now that the input file and output file names have been retrieved, I can proceed
 to implement the first pass of the assembler: the symbol table.
@@ -359,7 +359,7 @@ size of the current instrution in bytes.
 address += line_assembled_size;
 \end{lstlisting}
 
-\section{Pass 2: Assembly}
+\section{Pass 2: assembly}
 
 Now that the symbol table has been built, it is possible to pass through the
 file only once more. I wrap this entire second pass in the \texttt{assemble()}
@@ -456,7 +456,7 @@ assemble(fp, symtable_head, memory);
 fclose(fp);
 \end{lstlisting}
 
-\section{Parsing a Line of Assembly}
+\section{Parsing a line of assembly}
 
 Now that the foundations of the assembler have been constructed, the main part
 of the program that is missing is the \texttt{parseline()} function. Which until
@@ -483,6 +483,8 @@ data->operand_label[0] = '\0';
 
 if (line[0] == ';') return 0;
 \end{lstlisting}
+
+\subsection{Label definitions}
 
 As a rule of my assembly language syntax, all label definitions must begin from
 the first column of the line. They can only contain alphanumeric characters and
@@ -516,13 +518,161 @@ for ( ;; ) { // infinite loop
 }
 \end{lstlisting}
 
+The label is copied over and converted to lowercase as this assembler is not
+case-sensitive. \texttt{malloc()} is used to allocate memory for this label
+
+\begin{lstlisting}
+data->new_label = malloc(len + 1);
+for (int i = 0; i < len; i++) {
+	data->new_label[i] = tolower(line[i]);
+}
+data->new_label[len] = '\0'; // add terminating 0
+\end{lstlisting}
+
+If a colon was specified after the label, it is then skipped over:
+
+\begin{lstlisting}
+if (line[index] == ':') {
+	index++;
+}
+\end{lstlisting}
+
+\subsection{Getting the opcode}
+
+After a label definition, there must be tabs or spaces seperating it from the
+opcode. I skip over them with a \texttt{for} loop.
+
+\begin{lstlisting}
+for ( ; line[index] == '\t' || line[index] == ' '; index++) ;
+\end{lstlisting}
+
+The opcode is copied over in a similar way to the label definition. The line
+is looped through from the end of the label definition until a tab, space,
+new line, or comment is encountered. Every character is checked to see if it
+would be valid in an opcode using the \texttt{opcode\_char\_valid()} function.
+
+The index variable is the same one used previously, so its current position will
+be after the label definition and any whitespace following it.
+
+\begin{lstlisting}
+int len = 0; // length of opcode name
+char opcode_name[OPCODE_NAME_MAX_LEN + 1] = { 0 };
+for ( ;; ) { // infinite loop
+	if (line[index] == ';') break;
+	int char_valid = is_opcode_char_valid(line[index]);
+	if (char_valid == 1) {
+		// char is valid
+		opcode_name[len] = line[index];
+		len++;
+		index++;
+		if (len > OPCODE_NAME_MAX_LEN) {
+			die("line %d: Opcode name too long\n", line_no);
+		}
+	} else {
+		// char is not valid or is end of opcode
+		if (	line[index] != '\n' &&
+			line[index] != '\t' &&
+			line[index] != ' '	) {
+			die("line %d: Opcode contains invalid characters, char: %c\n", line_no, line[index]);
+			exit(EXIT_FAILURE);
+		} else break;
+	}
+}
+if (strlen(opcode_name) == 0) return 0;
+\end{lstlisting}
+
+The \texttt{is\_opcode\_char\_valid()} function just checks each character and
+only allows letters or a full-stop (for pseudo instructions).
+
+\begin{lstlisting}
+if (isalpha(c)) return true;
+if (c == '.') return true;
+else return false;
+\end{lstlisting}
+
+The name of the opcode is now stored in the \texttt{opcode\_name} variable.
+
+\subsection{Getting the operands}
+
+In my assembler's syntax, operands are specified as either numbers, labels, or
+a register, any of which may also be surrounded by brackets. For example,
+\texttt{(hl)}, \texttt{0x33}, and \texttt{myLabel} would be valid operands.
+
+If there are multiple operands, they will all be saved into the same string at
+this stage, their actual values will be parsed later.
+
+To copy the operands string, I loop through the rest of the line until
+encountering either a new line or a comment. Similar to what I did with the
+opcode, I use the \texttt{is\_operand\_char\_valid()} function to avoid parsing
+any invalid characters later on.
+
+\begin{lstlisting}
+int operand_str_size = 0;
+char *start_of_operand = line + index;
+for ( ;; ) {
+	if (line[index] == ';') break;
+	int char_valid = is_operand_char_valid(line[index]);
+	if (char_valid == 1) {
+		operand_str_size++;
+		index++;
+	}
+	if (char_valid == 0) {
+		if (line[index] != '\n') {
+			die("ERROR: line %d: operand contains invalid character: %2X (hex)\n", line_no, line[index]);
+		} else break;
+	}
+}
+char *operand_str = NULL;
+if (operand_str_size != 0) {
+	operand_str = malloc(operand_str_size + 1);
+	memcpy(operand_str, start_of_operand, operand_str_size);
+	operand_str[operand_str_size] = 0; // null terminator
+}
+\end{lstlisting}
+
+The \texttt{is\_operand\_char\_valid()} function serves as a simple filter that
+rejects operands that are definitely invalid:
+
+\begin{lstlisting}
+if (isalnum(c)) return true;
+switch (c) {
+case ' ':
+case '+':
+case '-':
+case '_':
+case '(':
+case ')':
+case ',':
+case '\'':
+case '\t':
+		return true;
+default:
+		return false;
+}
+\end{lstlisting}
+
+\subsection{Finding the instruction}
+
+Now that the opcode and operand strings have been retrieved, they are passed
+into the \texttt{instruction\_lookup()} function which stores the operand's
+machine code value and converted operands into a custom data structure.
+
+\begin{lstlisting}
+// figure out what the instruction is
+instruction_lookup(opcode_name, operand_str, data);
+\end{lstlisting}
+
+The now-modified \texttt{data} variable is returned by the \texttt{parseline()}
+function. This variable now contains the name of any newly defined label, the
+correct binary opcode, and any converted operands.
+
 
 
 %-------------------------------------------------------------------------------
 
 \chapter{Technical Solution}
 
-\section{Source Files}
+\section{Source files}
 
 \lstset{numbers=left}
 
@@ -537,7 +687,7 @@ for ( ;; ) { // infinite loop
 \subsection{util.c}
 \lstinputlisting{../src/util.c}
 
-\section{Header Files}
+\section{Header files}
 
 \subsection{symtable.h}
 \lstinputlisting{../src/symtable.h}
