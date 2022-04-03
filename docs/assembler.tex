@@ -456,7 +456,7 @@ assemble(fp, symtable_head, memory);
 fclose(fp);
 \end{lstlisting}
 
-\section{Parsing a line of assembly}
+\section{Parsing and decoding a line of assembly}
 
 Now that the foundations of the assembler have been constructed, the main part
 of the program that is missing is the \texttt{parseline()} function. Which until
@@ -651,7 +651,7 @@ default:
 }
 \end{lstlisting}
 
-\subsection{Finding the instruction}
+\subsection{Parsing the instruction}
 
 Now that the opcode and operand strings have been retrieved, they are passed
 into the \texttt{instruction\_lookup()} function which stores the operand's
@@ -666,7 +666,329 @@ The now-modified \texttt{data} variable is returned by the \texttt{parseline()}
 function. This variable now contains the name of any newly defined label, the
 correct binary opcode, and any converted operands.
 
+\texttt{instruction\_lookup()} takes three arguments; the first two are the
+operand and opcode strings respectively; the final argument is the previously
+mentioned \texttt{data} variable which is passed by-reference so that it can be
+modified by the function.
 
+\subsubsection{Parsing pseudo-opcodes}
+
+Firstly, the opcode name is checked to see if it begins with a full-stop. If it
+does, the opcode is checked against the assembler's pseudo-opcodes, of which
+there is only one, \texttt{.org}. If the opcode is \texttt{.org}, the operand
+string is converted to an integer using the function \texttt{strtol()}, which
+converts either a denary or hexadecimal number into an integer. Strings starting
+with \texttt{"0x"} are treated as hexadecimal.
+
+The function then returns, storing the operand value as the specified memory
+address.
+
+\begin{lstlisting}
+static void instruction_lookup(const char *opcode_name, char *operand_name, struct line_data *data) {
+	switch (opcode_name[0]) {
+		case '.':
+			if (strcmp(opcode_name + 1, "org") == 0) {
+
+				uint16_t newAddr;
+				newAddr = (uint16_t)strtol(operand_name, NULL, 0);
+
+				// -1 means pseudo opcode
+				data->opcode_sz = -1;
+				data->pseudo_op = PSEUDO_ORG;
+				data->operand_sz = 2;
+				data->operand_label[0] = '\0';
+				data->operand_literal = newAddr;
+			}
+			break;
+\end{lstlisting}
+
+\subsubsection{Parsing regular instructions}
+
+If the opcode does not begin with a full-stop, it is treated as a real opcode.
+The opcode and operand strings are then passed into another function,
+\texttt{instruction\_parse()}.
+
+\begin{lstlisting}
+		default:
+			{	// NORMAL INSTRUCTION
+				struct ParsedInstruction instruction;
+				instruction = instruction_parse(opcode_name, operand_name);
+\end{lstlisting}
+
+This function does two things: it converts the opcode string to lowercase, and
+splits up the operand string into many parts. These parts can be seen in the
+sub-structure of \texttt{ParsedInstruction}, \texttt{ParsedOperand}:
+
+\begin{lstlisting}
+struct ParsedOperand {
+	bool isIndirect;			// does the operand use (  ) ?
+	char reg[LABEL_MAX_LEN+1];	// can also be a flag or label
+	signed int value;
+};
+\end{lstlisting}
+
+\texttt{isIndirect} is a boolean member that is true if the operand uses
+indirect addressing.
+
+\texttt{reg} is a string that holds whatever text is contained in the operand,
+if any. Despite the name, it does not neccesarily have to hold the name of a
+register, and could be a label or a flag.
+
+\texttt{value} is set equal to whatever numeric value is contained in the
+operand. This value is ignored unless \texttt{reg} is an empty string.
+
+Here is an example of how this data structure would hold the operands of the
+instruction \texttt{ld (hl), 0xFF}:
+
+\begin{lstlisting}
+operand1.isIndirect = true;
+operand1.reg = "hl";
+// operand1.value is ignored
+
+operand2.isIndirect = false;
+operand2.reg = NULL; // (empty)
+operand2.value = 255;
+\end{lstlisting}
+
+To do this parsing, the operands must first be split up into composite strings.
+A \texttt{for} loop iterates through the string until it finds a comma.
+
+\begin{lstlisting}
+for (int i = 0; args[i] != '\0'; i++) {
+
+	// convert tabs to spaces
+	if (args[i] == '\t') args[i] = ' ';
+
+	// find if there is a comma, and replace with '\0' to split operands
+	if (args[i] == ',') {
+		args[i] = '\0';
+		arg2 = args + i + 1;
+	}
+}
+\end{lstlisting}
+
+From this point, the two operands are seperately passed into the function
+\texttt{operand\_parse()}, which parses the operand into the aforementioned
+\texttt{ParsedOperand} data structure.
+
+\subsubsection{Parsing the operands}
+
+Firstly, the string is searched for a left-bracket and right-bracket character.
+
+\begin{lstlisting}
+const char* lbkt_loc = strchr(arg, '(');
+const char* rbkt_loc = strchr(arg, ')');
+\end{lstlisting}
+
+If both brackets are present (and the left bracket comes first), the
+\texttt{isIndirect} boolean variable is set to true.
+
+\begin{lstlisting}
+if (lbkt_loc != NULL && rbkt_loc != NULL) {
+	po.isIndirect = true;
+	if (lbkt_loc > rbkt_loc) {
+		die("mismatched brackets with operand: %s", arg);
+	}
+} else {
+	po.isIndirect = false;
+}
+\end{lstlisting}
+
+The operand string is then looped through until an alphabetical character is
+encountered. From then on, every subsequent letter is added to the \texttt{reg}
+variable.
+
+The remainder of the operand is then stepped through to see if any numerical
+characters are encountered. And if so, they are combined and converted into an
+integer, to be stored in \texttt{value}. The string is also checked for
+\texttt{0x}, as this specifies that the integer is hexadecimal.
+
+\begin{lstlisting}
+if (num_start != NULL) {
+	// copy it into buffer
+	char num_buffer[16] = { 0 };
+	for (int i = 0; i < 15; i++) {
+		if ( isdigit(num_start[i]) || ('a' <= tolower(num_start[i]) && tolower(num_start[i]) <= 'f') || ( ( i == 1 || i == 2 ) && tolower(num_start[i]) == 'x') ||
+				( i == 0 && ( (num_start[i] == '+') || (num_start[i] == '-') ) )
+				  ) { // 'x' is in case of hexadecimal
+			num_buffer[i] = num_start[i];
+		} else {
+			num_buffer[i] = '\0';
+			break;
+		}
+	}
+
+	// convert it to integer
+	int num = strtol(num_buffer, NULL, 0); // 0 base means either 10, 8, or 16 depending on input
+	po.value = (signed int)num;
+}
+\end{lstlisting}
+
+\subsection{Decoding the parsed instruction}
+
+Now that the instruction has been split up into its composite parts, the parsed
+information is passed into the \texttt{instruction\_decode()} function. This
+function finds the correct machine-code instruction by looking at the opcode
+name and the format of the operands.
+
+The Z80 CPU has 256 main machine-code instructions which only take up 1 byte per
+opcode. To decode these, I make a 256-long list which maps opcode names and
+operand formats to their equivelent instructions.
+
+Each entry in the list has this format:
+
+\begin{lstlisting}
+
+struct InstructionDecodeEntry {
+	// opcode is the entry's index in the list
+
+	// result
+	size_t	operand_sz;
+
+	// pattern to match
+	const char 	   *p_instruction_name;
+	int				p_operand_count;
+	// operand 1
+	bool			p_op1_indirect;
+	const char		p_op1_reg[LABEL_MAX_LEN+1];
+	// operand 2
+	bool			p_op2_indirect;
+	const char		p_op2_reg[LABEL_MAX_LEN+1];
+};
+
+\end{lstlisting}
+
+The \texttt{operand\_size} member is the size in bytes that the data immediately
+following the opcode will take up in memory. This data is usually a value
+specified as an operand.
+
+The \texttt{p\_instruction\_name} is the name of the parsed instruction, which
+will be the same as the opcode in the assembly source file. For example:
+\texttt{ld}, \texttt{ldir}, or \texttt{out}.
+
+The \texttt{p\_opx\_indirect} members specify whether or not the instruction
+operands use indirect addressing.
+
+The \texttt{p\_opx\_reg} members specify the register or flag name that must
+appear in that operand for the instruction to match.
+
+For many instruction, there are fewer than two operands. In these cases,
+\texttt{p\_op2\_reg} and/or \texttt{p\_op1\_reg} may be left empty to indicate
+that the operand should be left empty for the instruction to match.
+
+Below are the first few entries in the decode table, to demonstrate how
+instructions are matched.
+
+\begin{lstlisting}
+const struct InstructionDecodeEntry DECODE_TABLE_MAIN[] = {
+	// 0x00
+	{	0,	"nop",	0,								}, // nop
+	{	2,	"ld",	2,	false,	"bc",	false,	""	}, // ld bc, **
+	{	0,	"ld",	2,	true,	"bc",	false,	"a"	}, // ld (bc), a
+	{	0,	"inc",	1,	false,	"bc",				}, // inc bc
+	{	0,	"inc",	1,	false,	"b",				}, // inc b
+	{	0,	"dec",	1,	false,	"b",				}, // dec b
+	{	1,	"ld",	2,	false,	"b",	false,	""	}, // ld b, *
+	{	0,	"rlca",	0,								}, // rlca
+	// etc...
+};
+\end{lstlisting}
+
+To find the correct instruction, the function begins by looping through the
+entire list. Once an entry is found to match the parsed opcode and operands,
+the current value of the  \texttt{i} variable is the correct machine op-code.
+
+\begin{lstlisting}
+for (int i = 0; i < (int)(sizeof(DECODE_TABLE_MAIN) / sizeof(struct InstructionDecodeEntry)); i++) {
+\end{lstlisting}
+
+\subsubsection{Checking for a match}
+
+Firstly, the opcode name passed as an argument is compared to the opcode name of
+the current entry in the list. If this is the case, further conditions are
+checked.
+
+\begin{lstlisting}
+if (strcmp(e.p_instruction_name, p.opcode) == 0) {
+\end{lstlisting}
+
+\subsubsection{If there are no operands}
+
+If there are no operands, then you can be 100\% certain that this is a match.
+
+\begin{lstlisting}
+if (e.p_operand_count == 0) {
+	d.opcode_sz = 1;
+	d.opcode[0] = i;
+	d.operand_sz = 0;
+	d.operand_label[0] = 0;
+	break;
+}
+\end{lstlisting}
+
+\subsubsection{If there are one or more operands}
+
+If there are one or more operands, the comparison becomes complicated.
+
+First of all, the \texttt{isIndirect} flags are compared to ensure that if the
+instruction requires brackets, that these brackets are present. If the
+\texttt{isIndirect} flags do not match, \texttt{continue} is used to skip over
+this iteration and check the next entry in the table.
+
+\begin{lstlisting}
+if (e.p_operand_count >= 1) {
+	if (e.p_op1_indirect != p.operand1.isIndirect) continue;
+	if (e.p_operand_count == 2 && (e.p_op2_indirect != p.operand2.isIndirect) ) continue;
+\end{lstlisting}
+
+\subsubsection{If there is only one operand}
+
+If there is only one operand, then there are two possible outcomes. The first
+outcome is that the current entry's operand does not specify a string. In that
+case, the operand's value (or label, if present) will be inserted immediately
+after the opcode in memory.
+
+\begin{lstlisting}
+// example: jp 23456
+if (e.p_op1_reg[0] == 0) {
+	// op1 value is definitely operand
+	if (p.operand1.reg[0] == 0) { // if no label, use value
+		d.operand_label[0] = 0;
+		d.operand_literal = p.operand1.value;
+	} else { // copy over the label name, this will be replaced in pass 2
+		strncpy(d.operand_label, p.operand1.reg, LABEL_MAX_LEN+1);
+	}
+	d.opcode_sz = 1;
+	d.opcode[0] = i;
+	d.operand_sz = e.operand_sz;
+	break;
+}
+\end{lstlisting}
+
+The second outcome is that the current entry's operand specifies a string. In
+that case, the operand string must exactly match the current entry's operand. No
+data will be copied after the instruction.
+
+\begin{lstlisting}
+else if (strcmp(e.p_op1_reg, p.operand1.reg) == 0) { // check if exact match
+	d.opcode_sz = 1;
+	d.opcode[0] = i;
+	d.operand_sz = 0;
+	d.operand_label[0] = 0;
+	break;
+}
+\end{lstlisting}
+
+If neither of these conditions are met, \texttt{continue} is used to skip over
+this iteration and check the next entry in the table.
+
+\begin{lstlisting}
+else continue;
+\end{lstlisting}
+
+\subsubsection{If there are two operands}
+
+If there are two operands
 
 %-------------------------------------------------------------------------------
 
