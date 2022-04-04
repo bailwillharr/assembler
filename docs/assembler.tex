@@ -1750,29 +1750,29 @@ assembled. Due to the Z80's instruction set being binary-compatible with the
 Intel 8080, the assembler in its current state could assemble any Intel 8080
 program, albeit with slight syntax changes.
 
-Labels are supported in the program and the implementation is quite robust.
+Labels are supported in the program and the implementation is quite robust
+[Req. Obj. \ref{req_doLabels}].
 Invalid label names throw a suitable error and an error is thrown if a label
 name is reserved (such as the name of a register). Although, the label support
 could be improved by throwing a suitable error if the same label name was
-previously defined. In the code's current state, this would 
+previously defined. In the code's current state, the first label definition
+would be ignored and the second label definition would always be used when
+referenced.
 
-	\item \label{req_doLabels}
-		Support labels in the code
-	\item \label{req_supportLiterals}
-		Allow integer literals to be specified in denary and hexadecimal
-	\item \label{req_calcOffset}
-		Calculate the offset for relative jumps from a label
-\subsection{Optional}
+When writing operands for instructions, denary and hexadecimal integers are
+fully supported \ref{req_supportLiterals}. If a literal is multiple bytes long,
+it is correctly saved in memory to be little-endian. It would've been more
+useful if the assembler also supported binary, as this base is very commonly
+used in assembly language.
 
-	\item Allow the output file to be specified
-	\item Have an assembler directive that specifies the starting memory address
-		(.org)
-	\item Instruction set: support extended, ix/iy, and bit instructions
-	\item Have assembler directives for placing arbitrary bytes into memory
-		(.db, .dw)
+%	\item \label{req_calcOffset}
+%		Calculate the offset for relative jumps from a label
 
-\end{enumerate}
-
-
+%	\item Allow the output file to be specified
+%	\item Have an assembler directive that specifies the starting memory address
+%		(.org)
+%	\item Instruction set: support extended, ix/iy, and bit instructions
+%	\item Have assembler directives for placing arbitrary bytes into memory
+%		(.db, .dw)
 
 \end{document}
