@@ -1744,6 +1744,35 @@ objectives. The input file can be specified on the command line [Req. Obj.
 \ref{req_inputFile}], allowing for build scripts and IDEs to easily interface
 with the assembler, running it automatically.
 
-The assembler supports the main 256 assembly instructions, allowing for 
+The assembler supports the main 256 assembly instructions [Req. Obj.
+\ref{req_supportInstructions}], allowing for many simple Z80 routines to be
+assembled. Due to the Z80's instruction set being binary-compatible with the
+Intel 8080, the assembler in its current state could assemble any Intel 8080
+program, albeit with slight syntax changes.
+
+Labels are supported in the program and the implementation is quite robust.
+Invalid label names throw a suitable error and an error is thrown if a label
+name is reserved (such as the name of a register). Although, the label support
+could be improved by throwing a suitable error if the same label name was
+previously defined. In the code's current state, this would 
+
+	\item \label{req_doLabels}
+		Support labels in the code
+	\item \label{req_supportLiterals}
+		Allow integer literals to be specified in denary and hexadecimal
+	\item \label{req_calcOffset}
+		Calculate the offset for relative jumps from a label
+\subsection{Optional}
+
+	\item Allow the output file to be specified
+	\item Have an assembler directive that specifies the starting memory address
+		(.org)
+	\item Instruction set: support extended, ix/iy, and bit instructions
+	\item Have assembler directives for placing arbitrary bytes into memory
+		(.db, .dw)
+
+\end{enumerate}
+
+
 
 \end{document}
