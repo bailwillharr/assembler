@@ -47,6 +47,8 @@
 \author{Bailey Harrison}
 \date{
 	\today\endgraf\bigskip
+	Candidate Number: 7110\endgraf\bigskip
+	Beckfoot School 37101\endgraf\bigskip
 	Z80 Assembler
 }
 
@@ -1760,18 +1762,41 @@ would be ignored and the second label definition would always be used when
 referenced.
 
 When writing operands for instructions, denary and hexadecimal integers are
-fully supported \ref{req_supportLiterals}. If a literal is multiple bytes long,
+fully supported [Req. Obj. \ref{req_supportLiterals}]. If a literal is multiple bytes long,
 it is correctly saved in memory to be little-endian. It would've been more
 useful if the assembler also supported binary, as this base is very commonly
 used in assembly language.
 
-%	\item \label{req_calcOffset}
-%		Calculate the offset for relative jumps from a label
+The final required objective of supporting relative jumps is fully supported
+[Req. Obj. \ref{req_calcOffset}].
+The correct difference is calculated between the current address and the
+referenced label. The implementation is robust, any relative jumps that are too
+far will display a relevant error message to the user.
 
-%	\item Allow the output file to be specified
-%	\item Have an assembler directive that specifies the starting memory address
-%		(.org)
-%	\item Instruction set: support extended, ix/iy, and bit instructions
+\bigskip
+
+I managed to meet the majority of the optional objectives as well:
+
+\begin{itemize}
+	\item
+The output file can be specified on the command line
+[Opt. Obj. 1]. Although this wouldn't
+strictly be needed, it gets rid of the need to rename the file after every
+run of the assembler.
+	\item
+I also managed to add the ability to specify an arbitrary starting memory
+address [Opt. Obj. 2]. This makes the assembler more versatile as different Z80
+computer systems require user programs to start at different memory addresses.
+The \texttt{.org} pseudo-instruction solves this issue and allows the
+address to be specified in denary or hexadecimal.
+	\item
+The assembler can in theory support all extended, ix/iy, and bit-manipulating
+Z80 instructions. 
+\end{itemize}
+
+There were however some optional requirements
+
+
 %	\item Have assembler directives for placing arbitrary bytes into memory
 %		(.db, .dw)
 

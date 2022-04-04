@@ -12,11 +12,13 @@
 // constants
 #define DEFAULT_OUTFILE_NAME "out.bin"
 
+// print a help message to the user
 static void usage(char *argv0)
 {
     fprintf(stderr, "usage: %s [-hv] [-o output_file] file\n", argv0);
 }
 
+// print the assembler version
 static void version()
 {
     fprintf(stderr, "v0.0 Bailey Harrison\n");
