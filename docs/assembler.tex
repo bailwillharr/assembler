@@ -1221,7 +1221,24 @@ No. & Test Description                         & Data Type & Input              
 \subsection{Evidence}
 
 \lstset{numbers=none}
-\lstset{language=sh}
+
+\lstset{
+    numberstyle=\scriptsize,
+    columns=fixed, frame=single, rulecolor=, aboveskip=1.5\baselineskip,
+    showspaces=false, showstringspaces=false,
+    showtabs=false, tabsize=4, extendedchars=true,
+    breaklines=true, prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+    language=C,
+    upquote=true,
+    basicstyle=\scriptsize, identifierstyle=\ttfamily,
+    keywords={}  
+    identifierstyle=\ttfamily,
+    keywordstyle=\ttfamily
+	commentstyle=\ttfamily
+	stringstyle=\ttfamily
+	rulecolor=\ttfamily
+} 
+
 \begin{lstlisting}
 $ assembler file.asm
 $ ls out.bin
@@ -1791,13 +1808,19 @@ The \texttt{.org} pseudo-instruction solves this issue and allows the
 address to be specified in denary or hexadecimal.
 	\item
 The assembler can in theory support all extended, ix/iy, and bit-manipulating
-Z80 instructions. 
+Z80 instructions. I have only implemented the most commonly used of these
+extra instructions. Though adding more instructions in the future would be
+trivial.
+	\item
 \end{itemize}
 
-There were however some optional requirements
+However one criticism my end user gave was that the assembler is unable to add
+the two extra pseudo-instructions: \texttt{.db} and
+\texttt{.dw}. To add this functionality to the assembler would require a great
+part of the \texttt{symtable\_build()} and \texttt{assemble()} functions to be
+rewritten.
 
-
-%	\item Have assembler directives for placing arbitrary bytes into memory
-%		(.db, .dw)
+If I were to do the project again, I would design it from the ground-up with
+this functionality in mind.
 
 \end{document}

@@ -1,0 +1,129 @@
+	LD BC, (23296)
+	  ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	CALL GetScreenPos
+	    ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+Line:
+     ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	CALL FillLine
+	    ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	CALL GetNextLine
+	    ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	LD A, (HL)
+	  ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	OR A
+	  ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	JR Z, Line
+	  ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	RET
+	   ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+FillLine:
+         ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	PUSH HL
+	    ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	CALL FillLeft
+	    ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	POP HL
+	   ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	PUSH HL
+	    ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	INC HL
+	   ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	CALL FillRight
+	    ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	POP HL
+	   ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	RET
+	   ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+FillLeft:
+         ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	LD A, (HL)
+	  ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	OR A
+	  ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	JR NZ, MaskLeft
+	  ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	LD (HL), 255
+	  ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	DEC HL
+	   ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	JR FillLeft
+	  ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+MaskLeft:
+         ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	LD B, 0
+	  ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	PUSH AF
+	    ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+LeftAgain:
+          ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	BIT 0, A
+	   ^ ***ERROR*** org not yet set (use instruction 'org' or directive '#code')
+	JR NZ, EndFillLeft
+	SLA B
+	SET 0, B
+	SRA A
+	JR LeftAgain
+EndFillLeft:
+	POP AF
+	OR B
+	LD (HL), A
+	RET
+FillRight:
+	LD A, (HL)
+	OR A
+	JR NZ, MaskRight
+	LD (HL), 255
+	INC HL
+	JR FillRight
+MaskRight:
+	LD B, 0
+	PUSH AF
+RightAgain:
+	BIT 7, A
+	JR NZ, EndFillRight
+	SRA B
+	SET 7, B
+	SLA A
+	JR RightAgain
+EndFillRight:
+	POP AF
+	OR B
+	LD (HL), A
+	RET
+GetScreenPos:
+	LD A, C
+	AND 0x38 ; %00111000
+	RLCA
+	RLCA
+	OR B
+	LD L, A
+	LD A, C
+	AND 0x07 ; %00000111
+	LD H, A
+	LD A, C
+	AND 0xC0 ; %11000000
+	RRCA
+	RRCA
+	RRCA
+	OR H
+	OR 0x40 ; &40
+	LD H, A
+	RET
+; Takes HL as Screen Address
+GetNextLine:
+	INC H
+	LD A, H
+	AND 7
+	RET NZ
+	LD A, L
+	ADD A, 32
+	LD L, A
+	RET C
+	LD A, H
+	SUB 8
+	LD H, A
+	RET
+
+
+total time: 0.0009 sec.
+30 errors

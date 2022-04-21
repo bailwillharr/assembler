@@ -484,7 +484,7 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 
 	for (int i = 0; i < (int)(sizeof(DECODE_TABLE_MAIN) / sizeof(struct InstructionDecodeEntry)); i++) {
 		const struct InstructionDecodeEntry e = DECODE_TABLE_MAIN[i];
-		if (strcmp(e.p_instruction_name, p.opcode) == 0) {
+		if (strcmp(e.p_instruction_name, p.opcode) == 0) { // if there are no operands
 			if (e.p_operand_count == p.operands) {
 				if (e.p_operand_count == 0) {
 					d.opcode_sz = 1;
@@ -493,12 +493,13 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 					d.operand_label[0] = 0;
 					break;
 				}
-				if (e.p_operand_count >= 1) {
+				if (e.p_operand_count >= 1) { // if there are one or more operands
 
+					// check that both operands use indirect addressing if they should
 					if (e.p_op1_indirect != p.operand1.isIndirect) continue;
 					if (e.p_operand_count == 2 && (e.p_op2_indirect != p.operand2.isIndirect) ) continue;
 
-					if (e.p_operand_count == 1) {
+					if (e.p_operand_count == 1) { // if there is exactly one operand
 						if (e.p_op1_reg[0] == 0) {
 							// op1 value is definitely operand
 							if (p.operand1.reg[0] == 0) {
@@ -527,7 +528,8 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 						// LBL/VAL,	MATCH
 						// MATCH,	MATCH
 					
-						if ( e.p_op1_reg[0] != 0 && e.p_op2_reg[0] != 0 ) {
+						if ( e.p_op1_reg[0] != 0 && e.p_op2_reg[0] != 0 ) { // if the operands are both strings
+							// in this case, there is no extra data
 							if (strcmp(e.p_op1_reg, p.operand1.reg) != 0) {
 								continue;
 							}
@@ -541,6 +543,8 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 							d.operand_label[0] = 0;
 							break;
 						} else if (e.p_op2_reg[0] != 0 && strcmp(e.p_op2_reg, p.operand2.reg) == 0 && e.operand_sz != 0) {
+							// if the left operand is a string and the right operand is a value/label,
+							// copy over the value from the right operand as extra data for the instruction
 							// LBL_VAL,		MATCH
 							if (p.operand1.reg[0] == 0) {
 								d.operand_label[0] = 0;
@@ -554,6 +558,8 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 							d.operand_sz = e.operand_sz;
 							break;
 						} else if (e.p_op1_reg[0] != 0 && strcmp(e.p_op1_reg, p.operand1.reg) == 0 && e.operand_sz != 0) {
+							// if the left operand is a value/label and the right operand is a string,
+							// copy over the value from the left operand as extra data for the instruction
 							if (p.operand2.reg[0] == 0) {
 								d.operand_label[0] = 0;
 								d.operand_literal = p.operand2.value;
@@ -574,6 +580,8 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 	}
 
 	// manually test for extended instructions (ED)
+
+	// ld bc, (**)
 	if (	(strcmp(p.opcode, "ld") == 0) &&
 			p.operands == 2 &&
 			p.operand1.isIndirect == false &&
@@ -591,6 +599,8 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 					d.operand_literal = p.operand2.value;
 				}
 	}
+
+	// bit 0, a
 	if (	(strcmp(p.opcode, "bit") == 0) &&
 			p.operands == 2 &&
 			p.operand1.isIndirect == false &&
@@ -603,6 +613,8 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 				d.operand_sz = 0;
 				d.operand_label[0] = 0;
 	}
+
+	// bit 7, a
 	if (	(strcmp(p.opcode, "bit") == 0) &&
 			p.operands == 2 &&
 			p.operand1.isIndirect == false &&
@@ -615,6 +627,8 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 				d.operand_sz = 0;
 				d.operand_label[0] = 0;
 	}
+
+	// bit 0, b
 	if (	(strcmp(p.opcode, "set") == 0) &&
 			p.operands == 2 &&
 			p.operand1.isIndirect == false &&
@@ -627,6 +641,8 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 				d.operand_sz = 0;
 				d.operand_label[0] = 0;
 	}
+
+	// bit 7, b
 	if (	(strcmp(p.opcode, "set") == 0) &&
 			p.operands == 2 &&
 			p.operand1.isIndirect == false &&
@@ -640,6 +656,7 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 				d.operand_label[0] = 0;
 	}
 
+	// sla b
 	if (	(strcmp(p.opcode, "sla") == 0) &&
 			p.operands == 1 &&
 			p.operand1.isIndirect == false &&
@@ -650,6 +667,8 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 				d.operand_sz = 0;
 				d.operand_label[0] = 0;
 	}
+
+	// sla a
 	if (	(strcmp(p.opcode, "sla") == 0) &&
 			p.operands == 1 &&
 			p.operand1.isIndirect == false &&
@@ -661,6 +680,7 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 				d.operand_label[0] = 0;
 	}
 
+	// sra a
 	if (	(strcmp(p.opcode, "sra") == 0) &&
 			p.operands == 1 &&
 			p.operand1.isIndirect == false &&
@@ -671,6 +691,8 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 				d.operand_sz = 0;
 				d.operand_label[0] = 0;
 	}
+
+	// sra b
 	if (	(strcmp(p.opcode, "sra") == 0) &&
 			p.operands == 1 &&
 			p.operand1.isIndirect == false &&
@@ -681,8 +703,6 @@ static struct DecodedInstruction instruction_decode(struct ParsedInstruction p)
 				d.operand_sz = 0;
 				d.operand_label[0] = 0;
 	}
-
-
 
 	if (d.opcode_sz == 0) {
 		die("unknown instruction");
@@ -741,20 +761,23 @@ static void instruction_lookup(const char *opcode_name, char *operand_name, stru
 					fprintf(stderr, "2 { reg=%s, val=%d, isIndirect=%d }\n", instruction.operand2.reg, instruction.operand2.value, instruction.operand2.isIndirect);
 #endif
 
-				// now figure out wtf this instruction means
+				// get the binary machine code from the parsed information
 				struct DecodedInstruction decoded;
 				decoded = instruction_decode(instruction);
 
+				// copy over the opcode bytes
 				data->opcode_sz = decoded.opcode_sz;
 				data->opcode[0] = decoded.opcode[0];
 				data->opcode[1] = decoded.opcode[1];
 				data->opcode[2] = decoded.opcode[2];
 
+				// copy over the operand label, if the operand mentioned a label
 				data->operand_sz = decoded.operand_sz;
 				if (decoded.operand_label[0] == '\0')
 					data->operand_label[0] = '\0';
 				else
 					strncpy(data->operand_label, decoded.operand_label, LABEL_MAX_LEN+1);
+				// do the same for the operand literal
 				data->operand_literal = decoded.operand_literal;
 
 			}
@@ -818,10 +841,12 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 		line[0] != '\n') {
 		// there is a label on this line
 		
+		// check that the first character is not a digit
 		if ( isdigit(line[0]) != 0 || is_label_char_valid(line[0]) == 0) {
 			die("line %d: Label begins with invalid character\n", line_no);
 		}
 
+		// loop through the line until the end of the label is encountered
 		int len = 0;
 		for ( ;; ) {
 			if (line[len] == ';')  break;
@@ -842,8 +867,6 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 
 			}
 		}
-		// TODO: instead of malloc, return the length of substring in current line, we know it always starts at column zero.
-		// This means malloc() is only called during the first pass and not the second
 
 		// 'len' is now the length of the label name (ex. \0)
 
@@ -851,6 +874,7 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 			die("line %d: label name too long\n", line_no);
 		}
 
+		// allocate space for and copy over the newly defined label
 		data->new_label = malloc(len + 1);
 		for (int i = 0; i < len; i++) {
 			data->new_label[i] = tolower(line[i]);
@@ -875,6 +899,7 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 	// BEGIN OPCODE PARSING
 	int len = 0; // length of opcode name
 	char opcode_name[OPCODE_NAME_MAX_LEN + 1] = { 0 };
+	// loop until the end of the opcode is encountered
 	for ( ;; ) {
 		if (line[index] == ';') break;
 		int char_valid = is_opcode_char_valid(line[index]);
@@ -910,16 +935,18 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 	for ( ;; ) {
 		if (line[index] == ';') break;
 		int char_valid = is_operand_char_valid(line[index]);
-		if (char_valid == 1) {
+		if (char_valid == 1) { // if this opcode character is valid
 			operand_str_size++;
 			index++;
 		}
-		if (char_valid == 0) {
+		if (char_valid == 0) { // if character is invalid for an opcode, check to see if this is the end of the opcode
 			if (line[index] != '\n') {
 				die("ERROR: line %d: operand contains invalid character: %2X (hex)\n", line_no, line[index]);
 			} else break;
 		}
 	}
+
+	// allocate space for and copy the operand string
 	char *operand_str = NULL;
 	if (operand_str_size != 0) {
 		operand_str = malloc(operand_str_size + 1);
@@ -927,6 +954,7 @@ size_t parseline(char *line, struct line_data *data, int line_no)
 		operand_str[operand_str_size] = 0; // null terminator
 	}
 
+	// check the operands are not too long
 	if (operand_str_size > OPERAND_NAME_MAX_LEN) {
 		die("on line %d: operand too long\n", line_no);
 	}

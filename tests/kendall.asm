@@ -1,4 +1,4 @@
-	.org 23298 
+	.org
 	LD BC, (23296)
 	CALL GetScreenPos
 Line:
